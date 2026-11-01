@@ -5,8 +5,8 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 1, built. Steps 1-7 are done, and a fresh database reproduces the counts.
-- **Next action:** build Task 3 of `docs/plans/2026-11-01-opensky-collection.md` (daily schedule).
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`.
+- **Next action:** user decides whether to merge `opensky-collection` to `main` and whether the OpenSky comparison belongs in the phase 1 report. Then phase 2, which needs brainstorming first.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. OpenSky ATL arrivals and departures are collected daily by a `launchd` agent at 09:00, from `ops/com.flightops.opensky.plist`, logging to `data/raw/opensky/collect.log`. Remove it with `launchctl bootout gui/$(id -u)/com.flightops.opensky`. It runs from the working tree, so the checked-out branch must contain `sources/opensky.py`.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`.
 - **Repo:** phase 1 is merged to `main` locally, not pushed. OpenSky work is on branch `opensky-collection`.
 
