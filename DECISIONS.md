@@ -55,3 +55,8 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a one-command setup on another machine. The Postgres version comes from this Mac (18.1) instead of being pinned in the repo, so setup differences can go unnoticed until phase 7.
 - **Why:** no Docker runtime is installed, and nothing before phase 7 needs one.
 - **Revisit if:** someone else needs to run the project sooner, or a local dependency becomes hard to install.
+
+## 2026-11-01: Key raw reloads on file hash, and append changed files
+- **Chose:** a file already recorded in `dq.ingestion_run` by hash is skipped. A changed file with the same name, such as a newer FAA snapshot, is appended as a new delivery. Each file loads in one transaction.
+- **Gave up:** raw tables with one current version of each row, so staging must pick a delivery by `source_sha256`. Failed loads roll back and leave no run record, only the error.
+- **Revisit if:** repeated snapshots make raw too large, or failed attempts need to be reported in `dq`.
