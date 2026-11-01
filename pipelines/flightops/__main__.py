@@ -1,12 +1,12 @@
 import argparse
 
-from flightops import db
+from flightops import db, pipeline
 from flightops.sources import fetch, raw, registry
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="flightops")
-    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load"])
+    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load", "build", "all"])
     command = parser.parse_args().command
 
     if command == "ddl":  # prints raw table DDL from real headers, for writing a migration
@@ -19,15 +19,22 @@ def main() -> None:
                 fetch.extract_csv(d.dest)
     else:
         with db.connect() as conn:
-            if command == "migrate":
+            if command in ("migrate", "all"):
                 print("applied:", db.migrate(conn))
-            else:
+            if command in ("load", "all"):
                 for f in registry.RAW_FILES:
                     result = raw.load_file(conn, f.source, f.table, f.path())
                     print(
                         f"{f.table}: {result.rows} rows, {result.quarantined} quarantined"
                         f"{' (already loaded)' if result.skipped else ''}"
                     )
+            if command in ("build", "all"):
+                last_id = conn.execute("SELECT coalesce(max(id), 0) FROM dq.check_result").fetchone()[0]
+                pipeline.build(conn)
+                for name, value, passed in conn.execute(
+                    "SELECT name, value, passed FROM dq.check_result WHERE id > %s ORDER BY id", (last_id,)
+                ):
+                    print(f"{name}: {value}{'' if passed is None else ' ok' if passed else ' FAILED'}")
 
 
 if __name__ == "__main__":

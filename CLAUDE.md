@@ -4,10 +4,10 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Tasks 1-3 done.
-- **Next action:** build Task 4 of that plan.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Airport, flight, weather and aircraft staging are built. Everything past them is the intended design, so update this file when reality differs.
-- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load}`.
+- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Tasks 1-4 done.
+- **Next action:** build Task 5 of that plan.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging, tail resolution, ontology promotion and blocking checks are built, and the July 2024 ontology is loaded. Everything past them is the intended design, so update this file when reality differs.
+- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,all}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
