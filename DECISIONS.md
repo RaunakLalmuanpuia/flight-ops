@@ -49,3 +49,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Chose:** plain Postgres and a single pipeline command.
 - **Gave up:** a stack that looks more impressive on first read, and some later migration work.
 - **Revisit if:** a specific feature needs geospatial queries, scheduled runs or live ingestion, starting with OpenSky.
+
+## 2026-11-01: Run locally and containerize in the final phase
+- **Chose:** local Postgres, a Python virtual environment and the Laravel dev server. Docker becomes the last roadmap phase.
+- **Gave up:** a one-command setup on another machine. The Postgres version comes from this Mac (18.1) instead of being pinned in the repo, so setup differences can go unnoticed until phase 7.
+- **Why:** no Docker runtime is installed, and nothing before phase 7 needs one.
+- **Revisit if:** someone else needs to run the project sooner, or a local dependency becomes hard to install.

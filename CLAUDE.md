@@ -5,7 +5,7 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 1, not started.
-- **Next action:** install a Docker runtime so `docker compose version` works, then plan step 1 of `docs/phase-1-plan.md`.
+- **Next action:** user reviews `docs/plans/2026-11-01-phase-1-foundation-raw-load.md` (steps 1-2). After approval, build Task 1.
 - **Built so far:** nothing. Commands and paths in this file are the intended design, so update them when reality differs.
 - **Repo:** branch `main`, with the initial docs committed.
 
@@ -19,7 +19,7 @@ When the user says "start phase N" or "continue":
 
 1. Read `DECISIONS.md`, `docs/roadmap.md` and the phase's plan in `docs/`. Phase 1's design is approved, so don't brainstorm it again. Later phases with no plan file need `superpowers:brainstorming` first.
 2. If the repo has no commits, rename the branch to `main` and commit the existing docs. Saying "start" authorizes this one commit.
-3. Check that `docker compose version` works. If it doesn't, stop and tell the user.
+3. Check that `pg_isready -h localhost` reports accepting connections. If it doesn't, stop and tell the user.
 4. Use `superpowers:writing-plans` for only the next few steps of the phase, then stop for the user's review before building. Save it under `docs/plans/`.
 5. After approval, build with `superpowers:executing-plans` and `superpowers:test-driven-development`, and use `superpowers:verification-before-completion` before calling a step done.
 
@@ -28,7 +28,7 @@ When the user says "start phase N" or "continue":
 - **Pipelines:** Python, managed with `uv`. Pipelines are the only writers to `raw`, `staging`, `ontology` and `dq`.
 - **Database:** Postgres. PostGIS comes later, when a feature needs geospatial queries.
 - **App:** Laravel + Inertia + Vue + Tailwind. It reads from `ontology` and `dq` and never writes to them. App-owned tables (users, sessions) live in `app`.
-- **Runtime:** everything runs in Docker Compose.
+- **Runtime:** local for now: Postgres.app, a `uv` virtual environment in `pipelines/.venv`, and the Laravel dev server (`php artisan serve`). Don't add Docker until the final roadmap phase.
 
 ## Data sources
 

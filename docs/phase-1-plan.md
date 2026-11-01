@@ -11,7 +11,6 @@ flight-ops/
 ├── CLAUDE.md
 ├── DECISIONS.md
 ├── README.md
-├── compose.yaml
 ├── .env.example
 ├── data/raw/{bts,faa,iem,ourairports}/   # gitignored
 ├── db/migrations/                        # raw, staging, ontology, dq
@@ -32,7 +31,7 @@ flight-ops/
 
 ## Steps
 
-1. **Foundation:** set up Compose with Postgres, the schemas and an ingestion-run table, plus file hashing so reloads change nothing.
+1. **Foundation:** set up the local Postgres database and Python environment, the schemas and an ingestion-run table, plus file hashing so reloads change nothing.
 2. **Raw load:** load the BTS national file, FAA `MASTER`/`ACFTREF`/`DEREG`, OurAirports, and IEM METAR/TAF for KATL.
 3. **Staging:** handle `2400` times, convert local times to UTC using timezones derived from coordinates, and parse METARs. Filter out IEM's 5-minute `AUTO`/`MADISHF` records, which appeared in the sample and aren't standard METARs.
 4. **Ontology:** build Airport, Carrier, Aircraft, Flight, WeatherObservation and Delay. Link tails to FAA records as of the flight date, recording the match method and any failures.
@@ -60,7 +59,7 @@ flight-ops/
 
 ## Done when
 
-- A fresh `docker compose up` plus the pipeline command reproduces the same counts.
+- A freshly created database plus the pipeline command reproduces the same counts.
 - Fixture tests cover the traps listed in `CLAUDE.md`.
 - "What happened to tail X on July 19?" can be answered with SQL.
 
@@ -83,6 +82,5 @@ The file has 110 columns and is 34.4 MB zipped. Allow several minutes for the do
 
 ## Open before step 1
 
-- `docker` was not on PATH when checked on 2026-11-01.
-- Plain curl is untested against the FAA download. If it refuses, download the file by hand.
+- A curl header request to the FAA download returned 403 on 2026-11-01, so plan on downloading it by hand.
 - The FAA file's contents have not been inspected, and IEM has not had a full-month pull.

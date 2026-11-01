@@ -10,8 +10,9 @@ Only the next phase gets detailed planning. Review and update this file before e
 | 4. Live data | What is happening now? | Current ATL view with live weather and aircraft | aviationweather.gov, OpenSky, hex and callsign resolution, PostGIS if needed |
 | 5. Operator workflow | What did the controller decide, and did it help? | Log a decision against a flight and review it later | Write-backs stored in `app` |
 | 6. Second hub | Does this work beyond ATL? | Same app on another hub, with a list of what broke | Mostly finding hidden ATL assumptions |
+| 7. Containerization | Can someone else run it from a clean checkout? | `docker compose up` reproduces the same counts and app | Compose for Postgres, pipelines and the app |
 
-Phases 1-3 plus a written outage case study are the core portfolio piece. Phases 4-6 are optional.
+Phases 1-3 plus a written outage case study are the core portfolio piece. Phases 4-6 are optional. Phase 7 comes last, whichever of those get built.
 
 ## Ordering
 
