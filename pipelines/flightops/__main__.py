@@ -1,12 +1,12 @@
 import argparse
 
-from flightops import db, pipeline
+from flightops import db, pipeline, report
 from flightops.sources import fetch, raw, registry
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="flightops")
-    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load", "build", "all"])
+    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load", "build", "report", "all"])
     command = parser.parse_args().command
 
     if command == "ddl":  # prints raw table DDL from real headers, for writing a migration
@@ -35,6 +35,10 @@ def main() -> None:
                     "SELECT name, value, passed FROM dq.check_result WHERE id > %s ORDER BY id", (last_id,)
                 ):
                     print(f"{name}: {value}{'' if passed is None else ' ok' if passed else ' FAILED'}")
+            if command in ("report", "all"):
+                path = db.REPO / "docs" / "phase-1-report.md"
+                path.write_text(report.render(conn))
+                print("wrote", path)
 
 
 if __name__ == "__main__":
