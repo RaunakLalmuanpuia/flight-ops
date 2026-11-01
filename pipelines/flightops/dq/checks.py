@@ -49,6 +49,15 @@ REPORTED = [
     ("flights_matched_deregistered_only", "SELECT count(*) FROM ontology.flight f WHERE aircraft_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM ontology.aircraft_registration r WHERE r.aircraft_id = f.aircraft_id AND r.tail_number = f.tail_number AND r.source = 'master')"),
     ("metar_filtered_madis", "SELECT count(*) FROM staging.v_metar WHERE metar LIKE '%MADISHF%'"),
     ("metar_gaps_over_90_min", "SELECT count(*) FROM (SELECT observed_at - lag(observed_at) OVER (ORDER BY observed_at) AS gap FROM staging.metar) x WHERE gap > interval '90 minutes'"),
+    ("rotation_pairs", "SELECT count(*) FROM ontology.rotation_leg WHERE connects IS NOT NULL"),
+    ("rotation_pairs_connected", "SELECT count(*) FROM ontology.rotation_leg WHERE connects"),
+    ("atl_rotation_pairs", "SELECT count(*) FROM ontology.atl_rotation_leg WHERE connects IS NOT NULL"),
+    ("atl_rotation_pairs_connected", "SELECT count(*) FROM ontology.atl_rotation_leg WHERE connects"),
+    ("breaks_after_diversion", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'after_diversion'"),
+    ("breaks_overlap", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'overlap_data_error'"),
+    ("breaks_short_gap", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'short_gap_likely_data_error'"),
+    ("breaks_unreported_flying", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'likely_unreported_flying'"),
+    ("breaks_long_gap", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'long_gap_unreported_or_out_of_service'"),
 ]
 
 

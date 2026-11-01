@@ -4,9 +4,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Tasks 1-4 done.
-- **Next action:** build Task 5 of that plan.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging, tail resolution, ontology promotion and blocking checks are built, and the July 2024 ontology is loaded. Everything past them is the intended design, so update this file when reality differs.
+- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Tasks 1-5 done.
+- **Next action:** build Task 6 of that plan.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging, tail resolution, ontology promotion, blocking checks and rotations are built, and the July 2024 ontology is loaded. Everything past them is the intended design, so update this file when reality differs.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,all}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
