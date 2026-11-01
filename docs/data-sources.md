@@ -50,3 +50,46 @@ Every file is UTF-8 with a header row. Column names in `raw` are the source head
 - **METAR noise:** 9,493 rows are 5-minute `MADISHF` records, leaving 1,003 others for staging to keep.
 - **Station codes:** the METAR endpoint takes `ATL` and the TAF endpoint takes `KATL`.
 - **TAF shape:** one row per forecast group, so `product_id` identifies the whole forecast.
+
+## Measured July 2024 build
+
+From `python -m flightops all`. A second `build` gave identical hashes of `ontology.flight` and `ontology.rotation_leg`. All six blocking checks pass.
+
+| Staging and ontology | Value |
+|---|---|
+| Flights, national and raw-to-ontology difference | 634,613, difference 0 |
+| Touching ATL | 60,144 |
+| Cancelled July 19-23 touching ATL | 3,208 |
+| Operated flights with no tail | 0 (3,658 cancelled flights have none) |
+| Scheduled block disagrees with `hhmm` | 316 |
+| Scheduled arrival at or before scheduled departure | 61 |
+| Actual departure `hhmm` matches `depdelay` | 616,756 of 616,756 |
+| Actual elapsed time differs from the time difference by over 1 minute | 7 |
+| METARs kept and `MADISHF` filtered | 1,003 and 9,493 |
+| METAR gaps over 90 minutes | 0 |
+| Airports, carriers, airframes | 345, 15, 7,280 |
+| Delay rows, TAF rows | 309,046, 2,767 |
+
+| Tail to airframe | Flights | Tails |
+|---|---|---|
+| `window_exact`, high | 587,617 | 5,274 |
+| `single_airframe_outside_window`, medium | 34,653 | 292 |
+| `window_open_start`, medium | 1,002 | 8 |
+| Unresolved: `no_window_multiple_airframes` | 6,965 | 57 |
+| Unresolved: `no_faa_record` | 399 | 7 |
+| Unresolved: `ambiguous_window` | 319 | 3 |
+
+Tails can appear under more than one method across dates. Matched flights split into 597,959 active and 25,313 deregistered only. On flights touching ATL, 317 of 59,992 with a tail are unresolved.
+
+| Rotations | Value |
+|---|---|
+| Legs | 616,241 |
+| Consecutive pairs, national | 610,617, of which 602,697 connect (98.70%) |
+| Consecutive pairs on tails that touched ATL | 374,452, of which 370,112 connect (98.84%) |
+| `likely_unreported_flying` | 5,533 |
+| `long_gap_unreported_or_out_of_service` | 2,088 |
+| `after_diversion` | 277 |
+| `short_gap_likely_data_error` | 14 |
+| `overlap_data_error` | 8 |
+
+**METAR parsing:** one report has a malformed wind group (`080/05KT`), so its wind stays null.

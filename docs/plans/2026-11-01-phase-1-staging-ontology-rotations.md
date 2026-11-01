@@ -1678,3 +1678,14 @@ Record measured results in `docs/data-sources.md`. Close the "Open before step 3
 git add docs DECISIONS.md CLAUDE.md
 git commit -m "feat: build July 2024 ontology and rotations, and reconcile"
 ```
+
+---
+
+## Build notes, 2026-11-01
+
+The code differs from this plan in two places, both bugs in the plan's code:
+
+- **`weather.py`:** the visibility regex read `M1/4SM` as 4 SM. It now accepts the `M` prefix, with a test. No July 2024 ATL report uses that form, so no number changed.
+- **`__main__.py`:** `build` printed every check from the past hour, so a rerun repeated older results. It now prints only the current run.
+
+The "306 tails" in the findings table did not reproduce. The built rules give 292 tails on rule 3, and `DECISIONS.md` uses that number. Measured results are in `docs/data-sources.md`.

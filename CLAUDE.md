@@ -4,9 +4,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Tasks 1-5 done.
-- **Next action:** build Task 6 of that plan.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging, tail resolution, ontology promotion, blocking checks and rotations are built, and the July 2024 ontology is loaded. Everything past them is the intended design, so update this file when reality differs.
+- **Current phase:** 1, in progress. Steps 1-5 are done.
+- **Next action:** write the plan for steps 6-7 of `docs/phase-1-plan.md` (weather join and report) and stop for review.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. The weather join and the report are the intended design, so update this file when reality differs.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,all}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
@@ -58,7 +58,7 @@ Downloaded files go in `data/raw/<source>/` and are gitignored. Reruns must be i
 ## Ontology
 
 - **Airport:** keyed internally, with IATA, ICAO and BTS airport IDs as attributes.
-- **Carrier:** the operating carrier, with IATA and ICAO codes. Marketing brand is a separate attribute.
+- **Carrier:** the operating carrier. The table holds IATA and DOT IDs for now. ICAO code and marketing brand are intended but need a source that BTS doesn't provide.
 - **Aircraft:** a physical airframe, with tail number, ICAO hex and type.
 - **Flight:** one operated leg, with scheduled and actual times in UTC.
 - **WeatherObservation:** one METAR at one airport. TAFs are stored separately because they are forecasts, not observations.

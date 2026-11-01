@@ -22,7 +22,8 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 ## 2026-11-01: Resolve aircraft from a current FAA snapshot plus DEREG
 - **Chose:** build dated tail mappings from today's `MASTER` and `DEREG` files, and report the match rate.
 - **Gave up:** true point-in-time registry history, so a tail re-registered since July 2024 could match the wrong aircraft.
-- **Revisit if:** the step 4 match results show this affects aircraft-type analysis. Then look for archived registry snapshots.
+- **Measured, July 2024:** 623,272 of 630,955 flights with a tail link to an airframe (98.8%). 587,617 are high confidence and 35,655 medium. 597,959 match an active registration, 25,313 a deregistered one only, and 7,683 stay unresolved with a reason. On ATL flights, 317 of 59,992 stay unresolved (0.5%).
+- **Revisit if:** aircraft-type analysis leans on the 34,653 flights linked only because the registry names one airframe for the tail, or on the unresolved flights. Then look for archived registry snapshots.
 
 ## 2026-11-01: Derive airport timezones from coordinates
 - **Chose:** compute timezones from OurAirports coordinates, because the source has no timezone column.
@@ -81,6 +82,6 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 
 ## 2026-11-01: Resolve tails by airframe, in a fixed order of rules
 - **Chose:** a dated window first, then a window with blank dates open, then a tail that has only ever had one airframe. Anything else stays unresolved with a reason. Each link stores its method and confidence.
-- **Gave up:** a complete match. About 2% of flights stay without an aircraft, and medium-confidence links rest on the registry never naming a second airframe for that tail.
-- **Why:** a strict window strands 306 tails whose certificates were reissued after July 2024, even though the registry names only one airframe for them.
+- **Gave up:** a complete match. 1.2% of flights with a tail stay without an aircraft, and medium-confidence links rest on the registry never naming a second airframe for that tail.
+- **Why:** a strict window strands 292 tails, on 34,653 flights, whose windows miss the flight date even though the registry names only one airframe for them, usually because the certificate was reissued after July 2024.
 - **Revisit if:** archived registry snapshots turn up, or phase 3 needs aircraft type on the unresolved flights.

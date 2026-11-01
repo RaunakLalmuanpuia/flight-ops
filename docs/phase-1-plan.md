@@ -81,7 +81,7 @@ Use these to check the load:
 
 The file has 109 columns plus a blank one from a trailing comma, and is 34.4 MB zipped. Allow several minutes for the download.
 
-## Open before step 3
+## Closed before step 3
 
-- **Airport codes change:** OurAirports has current codes, so West Palm Beach is `DJT` there and `PBI` in July 2024 BTS (4,112 flights). Step 3 needs an explicit, recorded alias, not a silent fix, or the blocking timezone check fails.
-- **`DEREG` repeats tails:** 383,685 rows cover 301,255 tails, so step 4 has to choose by date.
+- **Airport codes change:** resolved by `staging.airport_code_alias`, with one row, `PBI` to `KPBI`, covering 4,112 flights. The blocking timezone check passes.
+- **`DEREG` repeats tails:** resolved by choosing an airframe per tail and flight date. The rules are in `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`, and results are in `docs/data-sources.md`.
