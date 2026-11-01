@@ -4,9 +4,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-2 are done.
-- **Next action:** user reviews `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md` (steps 3-5). After approval, build Task 1.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging onward is the intended design, so update this file when reality differs.
+- **Current phase:** 1, in progress. Steps 1-2 are done. Building steps 3-5 from `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md`: Task 1 done.
+- **Next action:** build Task 2 of that plan.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Airport and flight staging are built. Everything past them is the intended design, so update this file when reality differs.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
@@ -69,10 +69,10 @@ Downloaded files go in `data/raw/<source>/` and are gitignored. Reruns must be i
 Identifiers are time-bounded and not interchangeable. Follow these rules:
 
 - **Tail to hex:** a tail number can be re-registered and a hex can move, so mappings carry `valid_from` and `valid_to`. Resolve against the flight date, not today's registry.
-- **Tail format:** BTS tails include the `N`, and FAA `N-NUMBER` omits it. Normalize both to the full form with the `N`.
+- **Tail format:** BTS tails usually include the `N`, but 123 Allegiant tails do not (`320NV`), and FAA `N-NUMBER` omits it. Normalize all of them to the full form with the `N`, and keep the delivered value.
 - **Hex format:** uppercase in storage. OpenSky returns lowercase.
 - **Callsign to flight:** a callsign identifies a flight on a date, not an aircraft. It may not match the marketed number, because regional flights sold as DL fly under the operator's prefix (Endeavor uses `EDV`).
-- **Airports:** BTS uses IATA codes, weather and OpenSky use ICAO. Join through the airport table and never build one by prefixing `K`, which fails outside the contiguous US.
+- **Airports:** BTS uses IATA codes, weather and OpenSky use ICAO. Join through the airport table and never build one by prefixing `K`, which fails outside the contiguous US. OurAirports holds current codes only, so a BTS code that has since changed needs a row in `staging.airport_code_alias`.
 - **Unresolved matches:** record them with a reason. Never guess, and never drop them silently. Each resolved link stores its method and confidence.
 
 ## Aircraft rotations
@@ -88,6 +88,7 @@ A rotation is one tail's flights ordered by actual time. Consecutive legs should
 - Times are local `hhmm` strings and `2400` occurs. `FlightDate` is the scheduled local departure date.
 - Arrivals can cross midnight and timezones, so derive the UTC arrival date from the scheduled block rather than assuming `FlightDate`.
 - Delay cause columns are filled only when the arrival delay is 15 minutes or more. Blank means not reported, not zero.
+- `hhmm` is authoritative. Block time only picks the date, because scheduled block disagrees with `crsarrtime` on 316 flights in July 2024.
 - METAR times are UTC, so all weather joins happen after conversion.
 
 ## Conventions

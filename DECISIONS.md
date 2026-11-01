@@ -66,3 +66,15 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a guarantee that raw holds every delivered row, so reconciling means raw rows plus quarantined rows. The limit of 10 is a judgment call, not a measured value.
 - **Why:** repairing would mean guessing at source data, and failing would block the file over one deregistered Bahamas aircraft.
 - **Revisit if:** a quarantined row turns out to matter to a flight, or a later file exceeds the limit.
+
+## 2026-11-01: Treat BTS hhmm as authoritative, and use block time only for the date
+- **Chose:** each UTC time comes from its delivered local `hhmm`, on the date closest to what block time or delay implies. Disagreements set `block_mismatch`.
+- **Gave up:** a single simple formula, so a flight's elapsed time can differ from the difference between its times, which it does on 7 flights.
+- **Why:** deriving arrivals purely from block time contradicted BTS's own scheduled arrival on 316 flights and produced an arrival before departure.
+- **Revisit if:** a mismatch pattern points to a wrong timezone instead of a schedule error.
+
+## 2026-11-01: Handle changed airport codes with an explicit alias table
+- **Chose:** `staging.airport_code_alias`, with one row so far: `PBI` to `KPBI`. Airports keep both the BTS code and the current code.
+- **Gave up:** a generic history of airport codes, so the next renamed airport fails the timezone check until someone adds a row.
+- **Why:** that failure is loud and the fix is one recorded line. OurAirports has no code history to build from.
+- **Revisit if:** adding months or hubs needs more than a handful of aliases.

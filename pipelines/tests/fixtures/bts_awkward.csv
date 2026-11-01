@@ -1,0 +1,11 @@
+flightdate,reporting_airline,dot_id_reporting_airline,iata_code_reporting_airline,tail_number,flight_number_reporting_airline,originairportid,destairportid,origin,dest,crsdeptime,deptime,depdelay,crsarrtime,arrtime,arrdelay,crselapsedtime,actualelapsedtime,cancelled,cancellationcode,diverted,divreacheddest,divactualelapsedtime,div1airport,div1wheelson,div2airport,div2wheelson,carrierdelay,weatherdelay,nasdelay,securitydelay,lateaircraftdelay
+2024-07-19,DL,19790,DL,N100DL,1,10397,13930,ATL,ORD,0800,0810,10.00,0855,0905,10.00,115.00,115.00,0.00,,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,N101DL,2,10397,13930,ATL,ORD,2400,2400,0.00,0055,0055,0.00,115.00,115.00,0.00,,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,N102DL,3,12892,10397,LAX,ATL,2300,2300,0.00,0630,0630,0.00,270.00,270.00,0.00,,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,,4,10397,13930,ATL,ORD,1600,,,1655,,,115.00,,1.00,A,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,N100DL,5,10397,13930,ATL,ORD,1700,1705,5.00,1755,,,115.00,,1.00,B,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,N103DL,6,10397,12953,ATL,LGA,0900,0900,0.00,1115,1600,,135.00,,0.00,,1.00,1.00,420.00,IAD,1100,,,,,,,
+2024-07-19,DL,19790,DL,N104DL,7,10397,12953,ATL,LGA,1300,1300,0.00,1515,,,135.00,,0.00,,1.00,0.00,,IAD,1500,CLE,1700,,,,,
+2024-07-19,G4,20368,G4,320NV,8,10397,13930,ATL,ORD,1000,1010,10.00,1055,1120,25.00,115.00,130.00,0.00,,0.00,,,,,,,10.00,0.00,0.00,0.00,15.00
+2024-07-19,DL,19790,DL,N105DL,9,13495,10397,PBI,ATL,0800,0800,0.00,1000,1000,0.00,120.00,120.00,0.00,,0.00,,,,,,,,,,,
+2024-07-19,DL,19790,DL,N106DL,10,10397,13930,ATL,ORD,1400,1400,0.00,1500,1455,-5.00,115.00,115.00,0.00,,0.00,,,,,,,,,,,

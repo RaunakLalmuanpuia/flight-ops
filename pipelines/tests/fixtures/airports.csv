@@ -1,0 +1,9 @@
+id,ident,type,name,latitude_deg,longitude_deg,iso_country,icao_code,iata_code,gps_code,local_code
+1,KATL,large_airport,Hartsfield-Jackson,33.6367,-84.4281,US,KATL,ATL,KATL,ATL
+2,KORD,large_airport,O'Hare,41.9786,-87.9048,US,KORD,ORD,KORD,ORD
+3,KLAX,large_airport,Los Angeles,33.9425,-118.408,US,KLAX,LAX,KLAX,LAX
+4,KLGA,large_airport,LaGuardia,40.7772,-73.8726,US,KLGA,LGA,KLGA,LGA
+5,KIAD,large_airport,Dulles,38.9445,-77.4558,US,KIAD,IAD,KIAD,IAD
+6,KCLE,large_airport,Cleveland,41.4117,-81.8498,US,KCLE,CLE,KCLE,CLE
+7,KPBI,large_airport,West Palm Beach,26.6832,-80.0956,US,KDJT,DJT,KDJT,DJT
+8,TJSJ,large_airport,San Juan,18.4394,-66.0018,PR,TJSJ,SJU,TJSJ,SJU
