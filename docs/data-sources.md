@@ -120,3 +120,57 @@ A throwaway database built from the same raw files with `migrate`, `load` and `b
 | Coverage looks good for a recent day | 2026-10-31: 997 arrivals and 861 departures | Reasonable, but no BTS file exists yet for that date to compare with |
 | A day with no data yet returns 404 | Today's 00:00 UTC hour returned 404 with body `[]` and still cost 30 | 404 means "not ready": write no file, and retry on the next run |
 | Some fields can be blank | 2 of 84 arrivals had no `estDepartureAirport` | Stored blank in raw |
+
+### July 2024 backfill against BTS
+
+62 files, 66,680 rows. Every arrival file row names `KATL` as its arrival and every departure file row names it as its departure. 22 rows have no callsign. These are counts of ATL arrivals by UTC day, not a flight-by-flight match.
+
+| Day | BTS | OpenSky | BTS DL and 9E | OpenSky `DAL` and `EDV` |
+|---|---|---|---|---|
+| 2024-07-01 | 722 | 1099 | 555 | 780 |
+| 2024-07-02 | 891 | 1058 | 658 | 752 |
+| 2024-07-03 | 921 | 1088 | 678 | 772 |
+| 2024-07-04 | 846 | 991 | 606 | 685 |
+| 2024-07-05 | 730 | 891 | 542 | 634 |
+| 2024-07-06 | 840 | 1015 | 624 | 727 |
+| 2024-07-07 | 943 | 1109 | 698 | 797 |
+| 2024-07-08 | 994 | 1186 | 758 | 864 |
+| 2024-07-09 | 989 | 1167 | 762 | 872 |
+| 2024-07-10 | 1009 | 1167 | 757 | 837 |
+| 2024-07-11 | 977 | 1148 | 738 | 826 |
+| 2024-07-12 | 1021 | 1194 | 778 | 866 |
+| 2024-07-13 | 968 | 1150 | 739 | 846 |
+| 2024-07-14 | 930 | 1095 | 695 | 787 |
+| 2024-07-15 | 1033 | 1198 | 787 | 875 |
+| 2024-07-16 | 1035 | 1195 | 791 | 877 |
+| 2024-07-17 | 923 | 1101 | 699 | 789 |
+| 2024-07-18 | 933 | 1125 | 708 | 804 |
+| 2024-07-19 | 706 | 842 | 482 | 525 |
+| 2024-07-20 | 581 | 748 | 355 | 436 |
+| 2024-07-21 | 577 | 745 | 348 | 430 |
+| 2024-07-22 | 688 | 811 | 443 | 497 |
+| 2024-07-23 | 821 | 1004 | 587 | 686 |
+| 2024-07-24 | 971 | 1161 | 735 | 825 |
+| 2024-07-25 | 1023 | 1201 | 772 | 864 |
+| 2024-07-26 | 1033 | 1187 | 782 | 865 |
+| 2024-07-27 | 988 | 1176 | 752 | 864 |
+| 2024-07-28 | 890 | 1050 | 661 | 755 |
+| 2024-07-29 | 1034 | 1190 | 786 | 879 |
+| 2024-07-30 | 1057 | 1217 | 812 | 897 |
+| 2024-07-31 | 958 | 1123 | 726 | 807 |
+
+**Reading it:**
+
+- **The two sources agree on the shape of the month.** From July 2 to 31, the daily correlation is 0.994 for all arrivals and 0.996 for Delta and Endeavor.
+- **The outage shows in both, independently.** Delta and Endeavor arrivals against the same weekday a week earlier:
+
+| Day | BTS drop | OpenSky drop |
+|---|---|---|
+| July 19 | 38% | 39% |
+| July 20 | 52% | 48% |
+| July 21 | 50% | 45% |
+| July 22 | 44% | 43% |
+| July 23 | 26% | 22% |
+
+- **OpenSky counts run higher,** by 15-29% overall and 9-24% for Delta and Endeavor. It includes flying BTS doesn't, such as business jets and cargo, but that doesn't obviously explain the Delta and Endeavor gap. This is unexplained until flights are matched individually in phase 4.
+- **July 1 is an edge effect.** BTS has 0 arrivals before 06:00 UTC against OpenSky's 195, because those are June 30 local flights and the BTS file holds July flight dates only.
