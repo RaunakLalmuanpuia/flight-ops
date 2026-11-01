@@ -9,6 +9,7 @@ FINDINGS = """## Findings
 - **The July 19-23 cancellations at ATL were not caused by ATL weather.** 3,208 flights touching ATL were cancelled: 3,098 with code A (carrier), 80 with code C (NAS) and 30 with code B (weather). 2,864 were Delta and 207 were Endeavor (`9E`). This is the CrowdStrike outage period, which BTS doesn't name. The data shows the pattern, not the cause.
 - **Weather was mild when the spike began.** On July 19, 0 of 25 METARs were adverse, and that day had 895 cancellations. July 24 had 15 adverse METARs of 38 and 27 cancellations.
 - **One aircraft shows it.** `N102DN`, an A321, flew normally on July 18. On July 19 its Denver to Atlanta leg left 5 hours 16 minutes late, and from then to July 23, 11 of its legs were cancelled, all with code A. Every leg it did fly connected to the one before, so the aircraft stayed where the data says it was while the schedule around it fell away. The full timeline is the last table.
+- **OpenSky shows the same outage independently.** BTS is what airlines reported, and OpenSky is what receivers saw. Delta and Endeavor arrivals at ATL fell against the same weekday a week earlier by 38%, 52%, 50%, 44% and 26% in BTS on July 19-23, and by 39%, 48%, 45%, 43% and 22% in OpenSky. From July 2 to 31 their daily counts correlate at 0.996.
 - **Reported weather delays line up with observed weather.** An adverse METAR fell in the delay window for 81.5% of ATL departures with a weather delay, against 24.9% of other delayed departures. For arrivals it was 40.5% against 28.5%. The gap is smaller there because BTS doesn't say where the weather was, and it may have been at the origin.
 - **Rotations hold together.** 98.70% of consecutive legs connect nationally, and 98.84% on tails that touched ATL. The rest carry a label for their likely cause.
 - **Tail matching is good but not perfect.** 98.8% of flights with a tail link to an airframe. 7,683 stay unresolved with a reason, 317 of them on ATL flights.
@@ -19,7 +20,12 @@ FINDINGS = """## Findings
 - **Break causes are likely, not known.** BTS doesn't identify non-reporting or international flying.
 - **"Adverse" is this project's definition:** thunderstorm, heavy rain, fog, snow or freezing precipitation, ceiling under 1,000 ft, visibility under 3 SM, or gust of 30 kt or more.
 - **Weather covers ATL only,** so it can't explain a delay caused elsewhere.
+- **The OpenSky comparison is of daily counts, not matched flights.** OpenSky counts run higher, by 15-29% overall and 9-24% for Delta and Endeavor. Other flying may explain part of the overall gap, but the Delta and Endeavor gap is unexplained until flights are matched individually.
 - **One month is not a baseline,** especially one containing this outage, so reported checks have no thresholds yet.
+
+## Sources
+
+OpenSky data is from The OpenSky Network, https://opensky-network.org, cited as: Matthias Schäfer, Martin Strohmeier, Vincent Lenders, Ivan Martinovic and Matthias Wilhelm. "Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research". In Proceedings of the 13th IEEE/ACM International Symposium on Information Processing in Sensor Networks (IPSN), pages 83-94, April 2014.
 """
 
 ADVERSE = r"""(array_to_string(w.weather, ' ') ~ '(TS|\+RA|FG|SN|FZ)'
@@ -43,6 +49,23 @@ CROSS JOIN LATERAL (
 WHERE NOT f.cancelled AND f.arr_delay_min >= 15
 GROUP BY 2
 """
+
+# Days are UTC whatever the session timezone, because that is how OpenSky files are split.
+ARRIVALS_BY_DAY = """WITH bts AS (
+    SELECT (f.actual_arr_utc AT TIME ZONE 'UTC')::date AS day, count(*) AS bts,
+           count(*) FILTER (WHERE c.code IN ('DL', '9E')) AS bts_dl_9e
+    FROM ontology.flight f
+    JOIN ontology.carrier c USING (carrier_id)
+    JOIN ontology.airport a ON a.airport_id = f.landed_airport_id
+    WHERE a.iata_code = 'ATL'
+    GROUP BY 1
+), os AS (
+    SELECT (to_timestamp(lastseen::bigint) AT TIME ZONE 'UTC')::date AS day, count(*) AS opensky,
+           count(*) FILTER (WHERE left(callsign, 3) IN ('DAL', 'EDV')) AS opensky_dal_edv
+    FROM raw.opensky_flight
+    WHERE source_file LIKE 'KATL_arrival_2024-07-%' AND estarrivalairport = 'KATL'
+    GROUP BY 1
+), daily AS (SELECT * FROM bts JOIN os USING (day))"""
 
 SECTIONS = [
     (
@@ -118,6 +141,29 @@ GROUP BY 1 ORDER BY 3 DESC, 1 LIMIT 8""",
         + "UNION ALL"
         + CROSS_CHECK.format(label="arriving ATL", column="landed_airport_id", start="sched_arr_utc", end="actual_arr_utc", adverse=ADVERSE)
         + "ORDER BY 1 DESC, 2",
+    ),
+    (
+        "OpenSky against BTS, July 15-27",
+        "ATL arrivals by UTC day from two independent sources. Drops compare Delta and Endeavor with the same weekday a week earlier. "
+        "BTS uses carrier codes `DL` and `9E`, and OpenSky uses callsign prefixes `DAL` and `EDV`.",
+        ARRIVALS_BY_DAY
+        + """
+SELECT d.day, d.bts, d.opensky, d.bts_dl_9e, d.opensky_dal_edv,
+       round(100.0 * (p.bts_dl_9e - d.bts_dl_9e) / p.bts_dl_9e) AS bts_drop_pct,
+       round(100.0 * (p.opensky_dal_edv - d.opensky_dal_edv) / p.opensky_dal_edv) AS opensky_drop_pct
+FROM daily d LEFT JOIN daily p ON p.day = d.day - 7
+WHERE d.day BETWEEN '2024-07-15' AND '2024-07-27'
+ORDER BY 1""",
+    ),
+    (
+        "OpenSky and BTS agreement, July 2-31",
+        "July 1 is left out because BTS holds July flight dates only, so it misses arrivals from June 30 local flights.",
+        ARRIVALS_BY_DAY
+        + """
+SELECT round(corr(bts, opensky)::numeric, 3) AS corr_all, round(corr(bts_dl_9e, opensky_dal_edv)::numeric, 3) AS corr_dl_9e,
+       round(min(1.0 * opensky / bts), 2) AS min_ratio_all, round(max(1.0 * opensky / bts), 2) AS max_ratio_all,
+       round(min(1.0 * opensky_dal_edv / bts_dl_9e), 2) AS min_ratio_dl_9e, round(max(1.0 * opensky_dal_edv / bts_dl_9e), 2) AS max_ratio_dl_9e
+FROM daily WHERE day BETWEEN '2024-07-02' AND '2024-07-31'""",
     ),
     (
         "One aircraft, July 18-23",
