@@ -24,7 +24,10 @@ def main() -> None:
             else:
                 for f in registry.RAW_FILES:
                     result = raw.load_file(conn, f.source, f.table, f.path())
-                    print(f"{f.table}: {result.rows} rows{' (already loaded)' if result.skipped else ''}")
+                    print(
+                        f"{f.table}: {result.rows} rows, {result.quarantined} quarantined"
+                        f"{' (already loaded)' if result.skipped else ''}"
+                    )
 
 
 if __name__ == "__main__":

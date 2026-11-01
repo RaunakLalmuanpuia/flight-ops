@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import psycopg
 import pytest
 
 from flightops.sources import raw
@@ -60,10 +59,31 @@ def test_header_drift_is_refused(conn, table, tmp_path):
 
 
 @pytest.mark.parametrize("bad_row", ["123AB", "123AB,2024-07-19,x,y"])
-def test_malformed_row_rolls_back_the_whole_file(conn, table, tmp_path, bad_row):
+def test_malformed_row_is_quarantined_with_its_line_and_fields(conn, table, tmp_path, bad_row):
     bad = tmp_path / "bad.csv"
     bad.write_text(f"N-NUMBER,Flight Date,Note,\n456CD,2024-07-20,,\n{bad_row}\n")
-    with pytest.raises((ValueError, psycopg.Error)):
+    assert raw.load_file(conn, "test", table, bad) == raw.LoadResult(1, False, 1)
+    assert count(conn, "select count(*) from raw.sample") == 1
+    row = conn.execute(
+        "select q.line_number, q.fields, r.row_count, r.quarantined_count "
+        "from dq.quarantined_row q join dq.ingestion_run r on r.id = q.ingestion_run_id"
+    ).fetchone()
+    assert row == (3, bad_row.split(","), 1, 1)
+
+
+def test_reload_reports_quarantined_rows_without_adding_more(conn, table, tmp_path):
+    bad = tmp_path / "bad.csv"
+    bad.write_text("N-NUMBER,Flight Date,Note,\n456CD,2024-07-20,,\n123AB\n")
+    raw.load_file(conn, "test", table, bad)
+    assert raw.load_file(conn, "test", table, bad) == raw.LoadResult(1, True, 1)
+    assert count(conn, "select count(*) from dq.quarantined_row") == 1
+
+
+def test_too_many_malformed_rows_rolls_back_the_whole_file(conn, table, tmp_path):
+    bad = tmp_path / "bad.csv"
+    bad.write_text("N-NUMBER,Flight Date,Note,\n456CD,2024-07-20,,\n" + "123AB\n" * (raw.MAX_QUARANTINED + 1))
+    with pytest.raises(ValueError, match="malformed"):
         raw.load_file(conn, "test", table, bad)
     assert count(conn, "select count(*) from raw.sample") == 0
     assert count(conn, "select count(*) from dq.ingestion_run") == 0
+    assert count(conn, "select count(*) from dq.quarantined_row") == 0

@@ -70,17 +70,18 @@ Use these to check the load:
 | ATL flights | Count |
 |---|---|
 | Touching ATL | 60,144 |
-| Operated by DL | 41,363 |
+| `reporting_airline` is DL | 41,363 |
 | Distinct tails | 3,078 |
 | Missing tail (all cancelled) | 152 |
-| With a `2400` time | 57 |
+| With a `2400` scheduled or actual departure or arrival time | 57 |
+| Also counting wheels-off and wheels-on | 109 |
 | Diverted | 278 |
 | Cancelled July 19-23 | 3,208 |
 | Of those, DL | 2,864 |
 
-The file has 110 columns and is 34.4 MB zipped. Allow several minutes for the download.
+The file has 109 columns plus a blank one from a trailing comma, and is 34.4 MB zipped. Allow several minutes for the download.
 
-## Open before step 1
+## Open before step 3
 
-- A curl header request to the FAA download returned 403 on 2026-11-01, so plan on downloading it by hand.
-- The FAA file's contents have not been inspected, and IEM has not had a full-month pull.
+- **Airport codes change:** OurAirports has current codes, so West Palm Beach is `DJT` there and `PBI` in July 2024 BTS (4,112 flights). Step 3 needs an explicit, recorded alias, not a silent fix, or the blocking timezone check fails.
+- **`DEREG` repeats tails:** 383,685 rows cover 301,255 tails, so step 4 has to choose by date.

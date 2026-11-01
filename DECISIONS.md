@@ -60,3 +60,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Chose:** a file already recorded in `dq.ingestion_run` by hash is skipped. A changed file with the same name, such as a newer FAA snapshot, is appended as a new delivery. Each file loads in one transaction.
 - **Gave up:** raw tables with one current version of each row, so staging must pick a delivery by `source_sha256`. Failed loads roll back and leave no run record, only the error.
 - **Revisit if:** repeated snapshots make raw too large, or failed attempts need to be reported in `dq`.
+
+## 2026-11-01: Quarantine a few malformed raw rows instead of failing the file
+- **Chose:** a row with the wrong field count goes to `dq.quarantined_row` with its line number and fields, unrepaired. More than 10 in one file fails that file. `DEREG.txt` has one such row.
+- **Gave up:** a guarantee that raw holds every delivered row, so reconciling means raw rows plus quarantined rows. The limit of 10 is a judgment call, not a measured value.
+- **Why:** repairing would mean guessing at source data, and failing would block the file over one deregistered Bahamas aircraft.
+- **Revisit if:** a quarantined row turns out to matter to a flight, or a later file exceeds the limit.

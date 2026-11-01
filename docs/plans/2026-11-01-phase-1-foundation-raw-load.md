@@ -1,12 +1,14 @@
 # Phase 1, Steps 1-2: Foundation and Raw Load Implementation Plan
 
+**Status:** complete. As built, it differs in three ways: malformed rows go to `dq.quarantined_row` (`003_quarantine.sql`) rather than failing the file, the reconciliation uses `iata_code_reporting_airline` because the file has no operating-airline column, and `with_2400` counts only the four departure and arrival columns.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans and superpowers:test-driven-development. Use superpowers:verification-before-completion before calling a step done. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** One command applies migrations, and another loads every July 2024 source file into `raw` as delivered. Loading the same file twice changes nothing.
 
 **Architecture:** Pipelines run from a `uv` virtual environment in `pipelines/.venv` against the local Postgres. A small migration runner applies `db/migrations/*.sql`. One generic loader copies any delimited file into its `raw` table inside a single transaction, and records the file's SHA-256 in `dq.ingestion_run`, which is what makes reloads no-ops.
 
-**Tech Stack:** Python 3.12, `uv`, `psycopg` 3, `pytest`, local Postgres 18 (Postgres.app).
+**Tech Stack:** Python 3.12 or newer (3.14 in use), `uv`, `psycopg` 3, `pytest`, local Postgres 18 (Postgres.app).
 
 ## Global Constraints
 
@@ -55,12 +57,12 @@ IEM's ASOS endpoint takes `ATL` while its TAF endpoint takes `KATL`. The weather
 **Interfaces:**
 - Produces: `db.connect(url: str | None = None) -> psycopg.Connection` (autocommit, defaults to `DATABASE_URL`), `db.migrate(conn) -> list[str]` (names of the files applied), pytest fixture `conn` (a fresh migrated test database).
 
-- [ ] **Step 1: Check Postgres is running**
+- [x] **Step 1: Check Postgres is running**
 
 Run: `pg_isready -h localhost`
 Expected: `localhost:5432 - accepting connections`. If not, ask the user to start Postgres.app.
 
-- [ ] **Step 2: Create the project files and database**
+- [x] **Step 2: Create the project files and database**
 
 `.gitignore`:
 
@@ -109,7 +111,7 @@ mkdir -p pipelines/flightops && touch pipelines/flightops/__init__.py
 
 Expected: `pipelines/.venv` and `pipelines/uv.lock` exist. `uv` downloads Python 3.12 or newer if needed.
 
-- [ ] **Step 3: Write the failing test**
+- [x] **Step 3: Write the failing test**
 
 `pipelines/tests/conftest.py`:
 
@@ -150,12 +152,12 @@ def test_migrate_twice_applies_nothing(conn):
     assert db.migrate(conn) == []
 ```
 
-- [ ] **Step 4: Run the test to verify it fails**
+- [x] **Step 4: Run the test to verify it fails**
 
 Run: `uv run --env-file ../.env pytest tests/test_db.py -v`
 Expected: collection error, `flightops.db` does not exist.
 
-- [ ] **Step 5: Implement**
+- [x] **Step 5: Implement**
 
 `db/migrations/001_foundation.sql`:
 
@@ -210,12 +212,12 @@ def migrate(conn: psycopg.Connection) -> list[str]:
     return applied
 ```
 
-- [ ] **Step 6: Run the test to verify it passes**
+- [x] **Step 6: Run the test to verify it passes**
 
 Run: `uv run --env-file ../.env pytest tests/test_db.py -v`
 Expected: 2 passed.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add .gitignore .env.example pipelines db
@@ -234,7 +236,7 @@ git commit -m "feat: add local setup, schemas and migration runner"
 - Consumes: `conn` fixture.
 - Produces: `raw.normalize_header(header: list[str]) -> list[str]`, `raw.create_table_sql(table: str, path: Path) -> str`, `raw.load_file(conn, source: str, table: str, path: Path) -> raw.LoadResult` where `LoadResult` is a NamedTuple of `rows: int, skipped: bool`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `pipelines/tests/fixtures/raw_sample.csv` has awkward header names, the trailing blank column that BTS and FAA files are expected to have, a quoted comma and an empty value:
 
@@ -318,12 +320,12 @@ def test_malformed_row_rolls_back_the_whole_file(conn, table, tmp_path, bad_row)
     assert count(conn, "select count(*) from dq.ingestion_run") == 0
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run --env-file ../.env pytest tests/test_raw.py -v`
 Expected: collection error, `flightops.sources.raw` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `pipelines/flightops/sources/raw.py`:
 
@@ -414,12 +416,12 @@ def load_file(conn, source: str, table: str, path: Path) -> LoadResult:
     return LoadResult(rows, False)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run --env-file ../.env pytest tests/test_raw.py -v`
 Expected: all passed.
 
-- [ ] **Step 5: Record the tradeoff**
+- [x] **Step 5: Record the tradeoff**
 
 Append to `DECISIONS.md`:
 
@@ -430,7 +432,7 @@ Append to `DECISIONS.md`:
 - **Revisit if:** repeated snapshots make raw too large, or failed attempts need to be reported in `dq`.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add pipelines DECISIONS.md
@@ -448,7 +450,7 @@ git commit -m "feat: add idempotent raw file loader"
 - Consumes: `db.REPO`, `db.connect`, `db.migrate`, `raw.create_table_sql`, `raw.load_file`.
 - Produces: `registry.RAW_FILES: list[RawFile]`, `registry.DOWNLOADS: list[Download]`, `registry.DATA: Path`, `RawFile.path() -> Path`, `fetch.download(url: str, dest: Path) -> bool`, `fetch.extract_csv(zip_path: Path) -> None`, CLI `python -m flightops {migrate,ddl,fetch,load}`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `pipelines/tests/test_fetch.py`:
 
@@ -480,12 +482,12 @@ def test_extract_csv_takes_only_csv_members(tmp_path):
     assert not (tmp_path / "readme.html").exists()
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run --env-file ../.env pytest tests/test_fetch.py -v`
 Expected: collection error, `flightops.sources.fetch` does not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `pipelines/flightops/sources/fetch.py`:
 
@@ -620,12 +622,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run --env-file ../.env pytest tests/test_fetch.py -v`
 Expected: 2 passed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pipelines
@@ -644,19 +646,19 @@ git commit -m "feat: add source registry, downloads and pipeline CLI"
 - Consumes: the CLI from Task 3.
 - Produces: populated `raw.*` tables that steps 3-7 build on, with these table names: `bts_ontime`, `faa_master`, `faa_acftref`, `faa_dereg`, `ourairports_airports`, `iem_metar`, `iem_taf`.
 
-- [ ] **Step 1: Download the files**
+- [x] **Step 1: Download the files**
 
 The user downloads `https://registry.faa.gov/database/ReleasableAircraft.zip` in a browser and unzips `MASTER.txt`, `ACFTREF.txt` and `DEREG.txt` into `data/raw/faa/`. Stop and ask for this if the files are absent. Then run:
 
 Run: `uv run --env-file ../.env python -m flightops fetch`
 Expected: four `fetched` lines. The BTS download takes several minutes, and `data/raw/bts/` gains one CSV ending in `2024_7.csv`.
 
-- [ ] **Step 2: Generate the raw table migration from real headers**
+- [x] **Step 2: Generate the raw table migration from real headers**
 
 Run: `uv run --env-file ../.env python -m flightops ddl > ../db/migrations/002_raw_tables.sql`
 Expected: seven `CREATE TABLE raw.*` statements. Read the file and confirm that `raw.bts_ontime` has the 110 columns noted in the phase plan, or 109 if that count included the trailing blank column. If migrate fails on duplicate column names, stop and report them, because the loader compares headers to table columns and would need a rename rule.
 
-- [ ] **Step 3: Migrate and load**
+- [x] **Step 3: Migrate and load**
 
 Run:
 
@@ -667,14 +669,14 @@ uv run --env-file ../.env python -m flightops load
 
 Expected: `bts_ontime: 634613 rows`, and a row count for each of the other six tables. If FAA files fail on encoding or a malformed row, use superpowers:systematic-debugging. Do not add `errors="ignore"` or anything else that drops data silently.
 
-- [ ] **Step 4: Check that stray quotes did not swallow FAA rows**
+- [x] **Step 4: Check that stray quotes did not swallow FAA rows**
 
 The CSV reader joins lines across an unmatched `"`, which would lose rows with no error.
 
 Run: `wc -l ../data/raw/faa/MASTER.txt ../data/raw/faa/DEREG.txt ../data/raw/faa/ACFTREF.txt`
 Expected: each count minus the header equals `row_count` for that table in `dq.ingestion_run`. A difference is a bug to resolve before moving on.
 
-- [ ] **Step 5: Reconcile against the measured counts in `docs/phase-1-plan.md`**
+- [x] **Step 5: Reconcile against the measured counts in `docs/phase-1-plan.md`**
 
 Run in `psql -h localhost flightops`:
 
@@ -695,7 +697,7 @@ FROM atl;
 
 Expected: national 634,613, touching_atl 60,144, operated_dl 41,363, tails 3,078, missing_tail 152, missing_tail_operated 0, with_2400 57, diverted 278, cancelled_outage 3,208, cancelled_outage_dl 2,864. If a column name differs from the real header, use the name in `002_raw_tables.sql`. `with_2400` is the least certain, because the original count's column list isn't recorded. Investigate any other mismatch before moving on, and if the columns turn out to explain `with_2400`, record which ones.
 
-- [ ] **Step 6: Prove reloads change nothing**
+- [x] **Step 6: Prove reloads change nothing**
 
 Run:
 
@@ -705,11 +707,11 @@ uv run --env-file ../.env python -m flightops load
 
 Expected: every line ends `(already loaded)`, and `SELECT count(*) FROM dq.ingestion_run` still returns 7.
 
-- [ ] **Step 7: Write up the sources and close the open items**
+- [x] **Step 7: Write up the sources and close the open items**
 
 Write `docs/data-sources.md` with one section per source, stating only what was observed in the loaded files: URL, how it is obtained (scripted or by hand), snapshot date for FAA, delimiter, encoding, row count, SHA-256, and quirks. Remove the resolved items from "Open before step 1" in `docs/phase-1-plan.md`. Add a `DECISIONS.md` entry if the real files forced a tradeoff. Update Status in `CLAUDE.md` so the next action is planning steps 3-5, and list the commands that now work.
 
-- [ ] **Step 8: Run all tests and commit**
+- [x] **Step 8: Run all tests and commit**
 
 Run: `uv run --env-file ../.env pytest -v`
 Expected: all passed.

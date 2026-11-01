@@ -7,11 +7,13 @@ from typing import NamedTuple
 from psycopg import sql
 
 PROVENANCE = ("source_file", "source_sha256", "loaded_at")
+MAX_QUARANTINED = 10  # more than this means a broken file, not a few bad rows
 
 
 class LoadResult(NamedTuple):
     rows: int
     skipped: bool
+    quarantined: int = 0
 
 
 def normalize_header(header: list[str]) -> list[str]:
@@ -51,13 +53,14 @@ def load_file(conn, source: str, table: str, path: Path) -> LoadResult:
         digest = hashlib.file_digest(f, "sha256").hexdigest()
     with conn.transaction():
         prior = conn.execute(
-            "SELECT row_count FROM dq.ingestion_run WHERE table_name = %s AND source_sha256 = %s",
+            "SELECT row_count, quarantined_count FROM dq.ingestion_run WHERE table_name = %s AND source_sha256 = %s",
             (table, digest),
         ).fetchone()
         if prior:
-            return LoadResult(prior[0], True)
+            return LoadResult(prior[0], True, prior[1])
 
         rows = 0
+        quarantined = []
         with _open(path) as f:
             reader = csv.reader(f)
             cols = normalize_header(next(reader))
@@ -73,12 +76,21 @@ def load_file(conn, source: str, table: str, path: Path) -> LoadResult:
                     if not row:
                         continue
                     if len(row) < len(cols) or any(row[len(cols):]):
-                        raise ValueError(f"{path}:{reader.line_num}: expected {len(cols)} fields, got {len(row)}")
+                        quarantined.append((reader.line_num, f"expected {len(cols)} fields, got {len(row)}", row))
+                        if len(quarantined) > MAX_QUARANTINED:
+                            raise ValueError(f"{path}: more than {MAX_QUARANTINED} malformed rows, last at line {reader.line_num}")
+                        continue
                     copy.write_row([*row[: len(cols)], path.name, digest])
                     rows += 1
-        conn.execute(
-            "INSERT INTO dq.ingestion_run (source, table_name, source_file, source_sha256, row_count) "
-            "VALUES (%s, %s, %s, %s, %s)",
-            (source, table, path.name, digest, rows),
-        )
-    return LoadResult(rows, False)
+        run_id = conn.execute(
+            "INSERT INTO dq.ingestion_run (source, table_name, source_file, source_sha256, row_count, quarantined_count) "
+            "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+            (source, table, path.name, digest, rows, len(quarantined)),
+        ).fetchone()[0]
+        for line, reason, fields in quarantined:
+            conn.execute(
+                "INSERT INTO dq.quarantined_row (ingestion_run_id, line_number, reason, fields) "
+                "VALUES (%s, %s, %s, %s)",
+                (run_id, line, reason, fields),
+            )
+    return LoadResult(rows, False, len(quarantined))
