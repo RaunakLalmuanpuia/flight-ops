@@ -1,0 +1,6 @@
+n_number,serial_number,mfr_mdl_code,mode_s_code_hex,cert_issue_date
+100A ,S1   ,M1 ,a00001    ,20200101
+200A ,S2   ,M1 ,A00002    ,20240731
+300A ,S3   ,M1 ,A00003    ,20250101
+400A ,S4   ,M1 ,A00004    ,20200101
+500A ,S5   ,M1 ,A00005    ,20250101

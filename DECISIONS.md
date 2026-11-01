@@ -78,3 +78,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a generic history of airport codes, so the next renamed airport fails the timezone check until someone adds a row.
 - **Why:** that failure is loud and the fix is one recorded line. OurAirports has no code history to build from.
 - **Revisit if:** adding months or hubs needs more than a handful of aliases.
+
+## 2026-11-01: Resolve tails by airframe, in a fixed order of rules
+- **Chose:** a dated window first, then a window with blank dates open, then a tail that has only ever had one airframe. Anything else stays unresolved with a reason. Each link stores its method and confidence.
+- **Gave up:** a complete match. About 2% of flights stay without an aircraft, and medium-confidence links rest on the registry never naming a second airframe for that tail.
+- **Why:** a strict window strands 306 tails whose certificates were reissued after July 2024, even though the registry names only one airframe for them.
+- **Revisit if:** archived registry snapshots turn up, or phase 3 needs aircraft type on the unresolved flights.
