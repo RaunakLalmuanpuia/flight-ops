@@ -5,7 +5,7 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 1, in progress. Steps 1-2 are done.
-- **Next action:** write the plan for steps 3-5 of `docs/phase-1-plan.md` and stop for review. Read its "Open before step 3" section first.
+- **Next action:** user reviews `docs/plans/2026-11-01-phase-1-staging-ontology-rotations.md` (steps 3-5). After approval, build Task 1.
 - **Built so far:** migration runner, idempotent raw loader with quarantine, downloads and CLI. All seven raw tables are loaded in the local `flightops` database and match the measured counts. Staging onward is the intended design, so update this file when reality differs.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
