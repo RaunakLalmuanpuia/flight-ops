@@ -58,6 +58,10 @@ REPORTED = [
     ("breaks_short_gap", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'short_gap_likely_data_error'"),
     ("breaks_unreported_flying", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'likely_unreported_flying'"),
     ("breaks_long_gap", "SELECT count(*) FROM ontology.rotation_leg WHERE break_cause = 'long_gap_unreported_or_out_of_service'"),
+    ("atl_weather_events", "SELECT count(*) FROM ontology.flight_weather"),
+    ("atl_weather_unresolved", "SELECT count(*) FROM dq.unresolved_link WHERE entity = 'atl_weather'"),
+    ("atl_weather_stale_over_90", "SELECT count(*) FROM ontology.flight_weather WHERE staleness_min > 90"),
+    ("atl_weather_max_staleness_min", "SELECT coalesce(max(staleness_min), 0) FROM ontology.flight_weather"),
 ]
 
 

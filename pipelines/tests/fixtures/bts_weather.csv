@@ -1,0 +1,8 @@
+flightdate,reporting_airline,tail_number,flight_number_reporting_airline,origin,dest,crsdeptime,deptime,depdelay,crsarrtime,arrtime,crselapsedtime,actualelapsedtime,cancelled,diverted,divreacheddest,div1airport,div1wheelson
+2024-07-19,DL,N1W,1,ATL,ORD,0800,0830,30.00,0855,0925,115.00,115.00,0.00,0.00,,,
+2024-07-19,DL,N2W,2,ORD,ATL,0800,0830,30.00,1100,1130,120.00,120.00,0.00,0.00,,,
+2024-07-19,DL,N3W,3,ATL,ORD,0900,,,0955,,115.00,,1.00,0.00,,,
+2024-07-19,DL,N4W,4,ORD,ATL,1000,1000,0.00,1300,,120.00,,0.00,1.00,0.00,IAD,1230
+2024-07-19,DL,N5W,5,ORD,LGA,1000,1000,0.00,1300,,120.00,,0.00,1.00,0.00,ATL,1400
+2024-07-19,DL,N6W,6,ATL,ORD,0500,0500,0.00,0555,0555,115.00,115.00,0.00,0.00,,,
+2024-07-19,DL,N7W,7,LAX,ORD,0800,0800,0.00,1400,1400,240.00,240.00,0.00,0.00,,,

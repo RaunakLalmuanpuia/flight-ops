@@ -85,3 +85,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a complete match. 1.2% of flights with a tail stay without an aircraft, and medium-confidence links rest on the registry never naming a second airframe for that tail.
 - **Why:** a strict window strands 292 tails, on 34,653 flights, whose windows miss the flight date even though the registry names only one airframe for them, usually because the certificate was reissued after July 2024.
 - **Revisit if:** archived registry snapshots turn up, or phase 3 needs aircraft type on the unresolved flights.
+
+## 2026-11-01: Join weather to both scheduled and actual ATL times
+- **Chose:** one row per flight, event and basis, each linking to the latest METAR at or before that time, with its age in minutes.
+- **Gave up:** a single weather row per flight, so readers must pick a basis.
+- **Why:** a cancelled flight has no actual time but still needs its weather, and a delayed flight met different weather from what its schedule implied.
+- **Revisit if:** phase 2 only ever reads one basis.

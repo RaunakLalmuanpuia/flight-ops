@@ -4,9 +4,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-5 are done.
-- **Next action:** build Task 1 of `docs/plans/2026-11-01-phase-1-weather-join-report.md` (steps 6-7). Its decisions are settled.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. The weather join and the report are the intended design, so update this file when reality differs.
+- **Current phase:** 1, in progress. Steps 1-6 are done.
+- **Next action:** build Task 2 of `docs/plans/2026-11-01-phase-1-weather-join-report.md` (the report).
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. The report is the intended design, so update this file when reality differs.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,all}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
