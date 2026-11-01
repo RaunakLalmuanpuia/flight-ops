@@ -104,3 +104,19 @@ Tails can appear under more than one method across dates. Matched flights split 
 A throwaway database built from the same raw files with `migrate`, `load` and `build` gave identical hashes of `ontology.flight`, `ontology.rotation_leg` and `ontology.flight_weather`. The full report is `docs/phase-1-report.md`.
 
 **Diversions:** 113 flights stopped short nationally, none at or bound for ATL. All 179 diversions bound for ATL reached it.
+
+## OpenSky Network
+
+- **Obtained:** scripted, with `python -m flightops collect`, using OAuth2 client credentials from `.env`.
+- **Files and table:** `data/raw/opensky/KATL_{arrival,departure}_YYYY-MM-DD.csv`, one per UTC day, into `raw.opensky_flight`.
+- **Terms:** the user read the terms of use on 2026-11-01 and confirmed this use is allowed. The site refuses automated fetches of that page, so the pipeline's author didn't read them directly. The API docs allow "research and non-commerical purposes".
+- **Citation:** public work using this data should cite Schäfer, Strohmeier, Lenders, Martinovic and Wilhelm, "Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research", IPSN 2014, pages 83-94.
+
+| Finding | Evidence | Design consequence |
+|---|---|---|
+| Each query costs 30 credits, whatever its length or result | 1-hour and 24-hour queries, and a 404, each cost 30. Remaining went from 3,970 to 3,790 over 6 queries | Query whole days. Two a day costs 60 credits, as the roadmap estimated |
+| History reaches back at least to July 2024 | Rows returned for 30 days ago, 365 days ago and 2024-07-19 | **Corrects the roadmap**, which feared history might not be recoverable. The daily job is not urgent |
+| OpenSky corroborates the outage, in the one hour tested | ATL arrivals 12:00-13:00 UTC on 2024-07-19: BTS 21, with 1 DL or 9E. OpenSky 27, with 2 `DAL` or `EDV`. BTS on July 12 and 26 shows 81 and 85, with 66 and 67 | Backfill July 2024. It is independent evidence for the report, if the rest of the month holds up |
+| Coverage looks good for a recent day | 2026-10-31: 997 arrivals and 861 departures | Reasonable, but no BTS file exists yet for that date to compare with |
+| A day with no data yet returns 404 | Today's 00:00 UTC hour returned 404 with body `[]` and still cost 30 | 404 means "not ready": write no file, and retry on the next run |
+| Some fields can be blank | 2 of 84 arrivals had no `estDepartureAirport` | Stored blank in raw |

@@ -109,3 +109,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a standard category such as FAA IFR, so the definition is open to challenge.
 - **Why:** the cross-check needs a yes or no on weather that could delay flights, and that wording is easy to read and to dispute line by line.
 - **Revisit if:** phase 2 or 3 needs weather as a feature. Then define it in `ontology`, and test it against delays.
+
+## 2026-11-01: Collect OpenSky days as files, and only once they have settled
+- **Chose:** one CSV per airport, direction and UTC day, written before loading through the existing raw loader. Only days at least 2 days old are collected, and a saved day is never fetched again.
+- **Gave up:** data from yesterday, and any corrections OpenSky makes after a day has been saved.
+- **Why:** reusing the loader keeps hashing and idempotence in one place, files survive a stopped database, and a saved partial day would otherwise never be repaired.
+- **Revisit if:** phase 4 needs fresher data, or a re-fetch shows settled days still change.

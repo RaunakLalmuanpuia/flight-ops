@@ -5,9 +5,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 1, built. Steps 1-7 are done, and a fresh database reproduces the counts.
-- **Next action:** user reads OpenSky's terms at `https://opensky-network.org/about/terms-of-use`, which refuse automated fetches. Real collection is on hold until then. After that, continue `docs/plans/2026-11-01-opensky-collection.md` at Task 1, Step 6. The collector code and tests are done.
+- **Next action:** build Task 2 of `docs/plans/2026-11-01-opensky-collection.md` (July 2024 backfill).
 - **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`.
-- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all}`.
+- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`.
 - **Repo:** phase 1 is merged to `main` locally, not pushed. OpenSky work is on branch `opensky-collection`.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
@@ -40,7 +40,7 @@ When the user says "start phase N" or "continue":
 | Iowa Environmental Mesonet (IEM) | Historical METAR and TAF | Used for backfill, because aviationweather.gov cannot reach back far enough |
 | aviationweather.gov | Current METAR and TAF | Documented as previous 30 days only, 100 requests/min, 400 entries per response. Use from the live phase onward |
 | OurAirports | Airport reference, IATA/ICAO codes, coordinates | No timezone column. Derive timezone from coordinates |
-| OpenSky Network (later) | Callsigns, ICAO hex, positions | OAuth2 client credentials, tokens last 30 minutes. Daily credit quota per endpoint group. REST state vectors reach back 1 hour |
+| OpenSky Network (later) | Callsigns, ICAO hex, positions | OAuth2 client credentials, tokens last 30 minutes. Daily credit quota per endpoint group. REST state vectors reach back 1 hour. The flights endpoints reach back to at least July 2024, and each query costs 30 credits |
 
 Credentials come from environment variables. Never commit them, and keep `.env` gitignored.
 
