@@ -5,7 +5,7 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 1, built. Steps 1-7 are done, and a fresh database reproduces the counts.
-- **Next action:** build Task 1 of `docs/plans/2026-11-01-opensky-collection.md`. Phase 2 follows and needs brainstorming first.
+- **Next action:** user reads OpenSky's terms at `https://opensky-network.org/about/terms-of-use`, which refuse automated fetches. Real collection is on hold until then. After that, continue `docs/plans/2026-11-01-opensky-collection.md` at Task 1, Step 6. The collector code and tests are done.
 - **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all}`.
 - **Repo:** phase 1 is merged to `main` locally, not pushed. OpenSky work is on branch `opensky-collection`.
