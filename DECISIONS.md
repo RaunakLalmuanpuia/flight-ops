@@ -91,3 +91,21 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a single weather row per flight, so readers must pick a basis.
 - **Why:** a cancelled flight has no actual time but still needs its weather, and a delayed flight met different weather from what its schedule implied.
 - **Revisit if:** phase 2 only ever reads one basis.
+
+## 2026-11-01: Hold off on thresholds for reported checks
+- **Chose:** reported checks record values with no pass or fail, for now.
+- **Gave up:** an automatic warning when, say, the tail match rate drops, so a person has to read the report.
+- **Why:** the phase plan meant to set them after the first run, but one month containing a major outage can't show what normal looks like.
+- **Revisit if:** a second month is loaded. Set thresholds from the two months together.
+
+## 2026-11-01: Generate the report's tables and write its findings by hand
+- **Chose:** `docs/phase-1-report.md` comes from `python -m flightops report`, with the SQL under each table. The findings and limits are fixed prose in `report.py`.
+- **Gave up:** a report that fully rewrites itself, so the prose can fall out of step when data changes.
+- **Why:** tables that can't drift make the report defensible line by line, and interpreting them is a human job. Generating the sentences as well would be more code and read worse.
+- **Revisit if:** the project reports on more than a few months.
+
+## 2026-11-01: Define adverse weather for the cross-check only
+- **Chose:** thunderstorm, heavy rain, fog, snow or freezing precipitation, ceiling under 1,000 ft, visibility under 3 SM, or gust of 30 kt or more, defined in the report.
+- **Gave up:** a standard category such as FAA IFR, so the definition is open to challenge.
+- **Why:** the cross-check needs a yes or no on weather that could delay flights, and that wording is easy to read and to dispute line by line.
+- **Revisit if:** phase 2 or 3 needs weather as a feature. Then define it in `ontology`, and test it against delays.

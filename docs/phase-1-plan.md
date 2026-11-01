@@ -49,13 +49,17 @@ flight-ops/
 - Actual times convert to UTC and arrive after departure.
 - Delay causes add up to the arrival delay when they're reported.
 
-**Reported (these don't block; set thresholds after the first run):**
+**Reported (these don't block; thresholds wait for a second month, see `DECISIONS.md`):**
 
 - Share of tails matched to FAA, split into active and deregistered.
 - Rotation continuity rate, and breaks by cause.
 - METAR gaps longer than 90 minutes.
 - Missing tails. The file has 152 on ATL flights, all cancelled, so a missing tail on an operated flight is an anomaly.
 - Cross-checks: the July 19-23 cancellation spike is present, and weather-attributed delays line up with observed weather.
+
+## Report
+
+`python -m flightops report` writes `docs/phase-1-report.md`, and `all` does too.
 
 ## Done when
 

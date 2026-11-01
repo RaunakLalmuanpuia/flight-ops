@@ -609,3 +609,9 @@ Append to `DECISIONS.md`:
 git add docs DECISIONS.md CLAUDE.md pipelines
 git commit -m "feat: add the July 2024 data-quality report and close phase 1"
 ```
+
+---
+
+## Build notes, 2026-11-01
+
+All expected values matched. The plan's findings had no walkthrough, although step 7 asks for one, so the build added a finding for `N102DN`, drawn from the report's last table.

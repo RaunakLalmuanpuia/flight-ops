@@ -93,3 +93,14 @@ Tails can appear under more than one method across dates. Matched flights split 
 | `overlap_data_error` | 8 |
 
 **METAR parsing:** one report has a malformed wind group (`080/05KT`), so its wind stays null.
+
+| ATL weather join | Value |
+|---|---|
+| Events: scheduled and actual departures | 30,072 and 28,322 |
+| Events: scheduled and actual arrivals | 30,072 and 28,250 |
+| Total, and with no earlier METAR | 116,716, and 0 |
+| Age of the METAR: maximum, and over 90 minutes | 59 minutes, and 0 |
+
+A throwaway database built from the same raw files with `migrate`, `load` and `build` gave identical hashes of `ontology.flight`, `ontology.rotation_leg` and `ontology.flight_weather`. The full report is `docs/phase-1-report.md`.
+
+**Diversions:** 113 flights stopped short nationally, none at or bound for ATL. All 179 diversions bound for ATL reached it.

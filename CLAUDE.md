@@ -4,10 +4,10 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, in progress. Steps 1-6 are done.
-- **Next action:** build Task 2 of `docs/plans/2026-11-01-phase-1-weather-join-report.md` (the report).
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. The report is the intended design, so update this file when reality differs.
-- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,all}`.
+- **Current phase:** 1, built. Steps 1-7 are done, and a fresh database reproduces the counts.
+- **Next action:** user reviews `docs/phase-1-report.md` and decides whether to merge `phase-1-foundation` to `main`. After that come the roadmap's OpenSky collection job and phase 2, which needs brainstorming first.
+- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`.
+- **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all}`.
 - **Repo:** work is on branch `phase-1-foundation`, not yet merged to `main`.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
@@ -104,5 +104,6 @@ A rotation is one tail's flights ordered by actual time. Consecutive legs should
 - `docs/data-sources.md`: field notes on each source.
 - `docs/roadmap.md`: all phases, kept loose until each one starts.
 - `docs/phase-1-plan.md`: current phase plan.
+- `docs/phase-1-report.md`: generated data-quality report for July 2024. Change it through `pipelines/flightops/report.py`.
 - `docs/plans/`: task-level implementation plans.
 - `DECISIONS.md`: running log of tradeoffs. When work involves a real tradeoff, add an entry in the same change, using the existing format: what was chosen, what it gave up, and what would change the decision.
