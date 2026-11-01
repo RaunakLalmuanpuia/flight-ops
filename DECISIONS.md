@@ -115,3 +115,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** data from yesterday, and any corrections OpenSky makes after a day has been saved.
 - **Why:** reusing the loader keeps hashing and idempotence in one place, files survive a stopped database, and a saved partial day would otherwise never be repaired.
 - **Revisit if:** phase 4 needs fresher data, or a re-fetch shows settled days still change.
+
+## 2026-11-01: Run OpenSky collection by hand, not on a schedule
+- **Chose:** the user runs `python -m flightops collect` when needed. A `launchd` agent was built, tested and then removed.
+- **Gave up:** data arriving without anyone acting. A gap over 7 days needs `--from` and `--to`, and costs 60 credits per day collected.
+- **Why:** the user doesn't want a background job on this Mac, and flight history reaches back at least to July 2024, so waiting loses nothing today.
+- **Revisit if:** OpenSky shortens its history, or a later phase needs fresh data every day.

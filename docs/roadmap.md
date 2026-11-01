@@ -17,7 +17,7 @@ Phases 1-3 plus a written outage case study are the core portfolio piece. Phases
 ## Ordering
 
 - **Decision support before live data:** telling a controller what to act on is the stronger signal, and the July 2024 outage gives a real event to test against.
-- **OpenSky collection starts right after phase 1:** a small daily job for ATL arrivals and departures. Probing showed flight history reaching back to at least July 2024, so this is cheap and worthwhile rather than urgent. Each query costs 30 of 4,000 daily credits, so a daily pull costs 60.
+- **OpenSky collection starts right after phase 1:** a small job for ATL arrivals and departures, run by hand when needed. Probing showed flight history reaching back to at least July 2024, so this is cheap and worthwhile rather than urgent. Each query costs 30 of 4,000 daily credits, so each day collected costs 60.
 
 ## Known limit
 

@@ -478,3 +478,5 @@ git commit -m "feat: schedule the daily OpenSky collection"
 - **Terms:** the site refused an automated fetch of the terms page, so the user read them and confirmed this use is allowed.
 - **`launchd`:** the planned plist failed with exit 127, because `uv` isn't on the login shell's `PATH` under `launchd`. The plist now uses `/opt/homebrew/bin/uv`.
 - **Test fixture:** arrival and departure rows now differ, because the loader correctly skips a repeated file hash.
+
+- **Task 3 reversed:** the user chose to run collection by hand, so the `launchd` agent was uninstalled and `ops/` removed.
