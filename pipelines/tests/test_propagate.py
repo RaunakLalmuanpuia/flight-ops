@@ -92,3 +92,13 @@ def test_app_role_can_propagate_but_not_read_ontology(built):
             built.execute("select 1 from ontology.min_turn")
     finally:
         built.execute("RESET ROLE")
+
+
+def test_start_without_an_arrival_returns_nothing(built):
+    built.execute("update ontology.flight set actual_arr_utc = null where flight_number = '101'")
+    assert chain(built, "101") == []
+
+
+def test_unknown_percentile_is_rejected(built):
+    with pytest.raises(psycopg.errors.InvalidParameterValue):
+        chain(built, "101", None, 75)

@@ -1,13 +1,20 @@
 -- Min turn for a carrier at one percentile, falling back to all carriers under 200 samples.
+-- Raises only when a downstream leg exists, since propagate calls it per leg.
 CREATE FUNCTION app_read.min_turn_for(p_carrier_id bigint, p_percentile integer) RETURNS integer
-LANGUAGE sql STABLE AS $$
-    SELECT CASE p_percentile WHEN 10 THEN m.p10 WHEN 25 THEN m.p25 WHEN 50 THEN m.p50 END
+LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp AS $$
+BEGIN
+    IF p_percentile NOT IN (10, 25, 50) THEN
+        RAISE EXCEPTION 'percentile must be 10, 25 or 50, got %', p_percentile USING ERRCODE = 'invalid_parameter_value';
+    END IF;
+    RETURN (SELECT CASE p_percentile WHEN 10 THEN m.p10 WHEN 25 THEN m.p25 WHEN 50 THEN m.p50 END
     FROM ontology.min_turn m
     WHERE m.carrier_id = p_carrier_id AND m.samples >= 200
        OR m.carrier_id IS NULL
     ORDER BY m.carrier_id NULLS LAST
-    LIMIT 1
+    LIMIT 1);
+END
 $$;
+REVOKE EXECUTE ON FUNCTION app_read.min_turn_for(bigint, integer) FROM PUBLIC;
 
 -- Walks the flown chain (prev_flight_id), never the schedule-ordered leg_order used for display.
 CREATE FUNCTION app_read.propagate(p_flight_id bigint, p_arr_delay_min integer DEFAULT NULL, p_percentile integer DEFAULT 25)
@@ -28,6 +35,8 @@ WITH RECURSIVE chain AS (
     FROM ontology.flight f
     JOIN ontology.rotation_leg r ON r.flight_id = f.flight_id
     WHERE f.flight_id = p_flight_id
+      -- No starting arrival means nothing to propagate: return no rows, like a cancelled flight.
+      AND (CASE WHEN p_arr_delay_min IS NULL THEN f.actual_arr_utc ELSE f.sched_arr_utc END) IS NOT NULL
   UNION ALL
     SELECT c.depth + 1, n.flight_id, n.tail_number, n.sched_dep_utc,
            n.sched_arr_utc + d.delay * interval '1 minute',
