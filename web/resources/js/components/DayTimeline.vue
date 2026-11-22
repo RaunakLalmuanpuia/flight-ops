@@ -19,7 +19,8 @@ const pad = (h) => String(h).padStart(2, '0');
 </script>
 
 <template>
-    <svg :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" class="w-full" role="img" aria-label="ATL departures and arrivals by local hour, with METARs below">
+    <div class="overflow-x-auto">
+    <svg :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" class="w-full min-w-[640px]" role="img" aria-label="ATL departures and arrivals by local hour, with METARs below. The table that follows gives the same counts.">
         <g v-for="h in hours" :key="h.hour" :transform="`translate(${h.hour * COL},0)`" class="cursor-pointer" @click="emit('select-hour', selectedHour === h.hour ? null : h.hour)">
             <title>{{ pad(h.hour) }}:00 local · {{ total(h.dep) }} departures · {{ total(h.arr) }} arrivals</title>
             <rect :width="COL" :height="HALF * 2" :class="selectedHour === h.hour ? 'fill-slate-100 stroke-slate-400' : 'fill-transparent'" />
@@ -35,4 +36,20 @@ const pad = (h) => String(h).padStart(2, '0');
         </g>
         <text v-for="h in hours" :key="`l${h.hour}`" :x="h.hour * COL + COL / 2" :y="HEIGHT - 4" text-anchor="middle" class="fill-slate-500 text-[10px]">{{ pad(h.hour) }}</text>
     </svg>
+    </div>
+    <table class="sr-only">
+        <caption>Flights by ATL local hour</caption>
+        <thead>
+            <tr><th scope="col">Hour</th><th scope="col">Departures</th><th scope="col">Arrivals</th><th scope="col">Cancelled</th><th scope="col">Adverse METAR</th></tr>
+        </thead>
+        <tbody>
+            <tr v-for="h in hours" :key="`s${h.hour}`">
+                <th scope="row">{{ pad(h.hour) }}:00</th>
+                <td>{{ total(h.dep) }}</td>
+                <td>{{ total(h.arr) }}</td>
+                <td>{{ h.dep.cancelled + h.arr.cancelled }}</td>
+                <td>{{ metars[h.hour].adverse ? 'yes' : 'no' }}</td>
+            </tr>
+        </tbody>
+    </table>
 </template>
