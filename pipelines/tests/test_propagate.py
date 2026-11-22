@@ -102,3 +102,28 @@ def test_start_without_an_arrival_returns_nothing(built):
 def test_unknown_percentile_is_rejected(built):
     with pytest.raises(psycopg.errors.InvalidParameterValue):
         chain(built, "101", None, 75)
+
+
+def test_late_aircraft_is_zero_when_reported_and_null_when_not(built):
+    def late(start, number):
+        return built.execute(
+            "select actual_late_aircraft from app_read.propagate(%s) where flight_number = %s",
+            (fid(built, start), number),
+        ).fetchone()[0]
+
+    assert late("501", "502") == 0
+    assert late("101", "102") == 45
+    assert late("101", "105") is None
+
+
+def test_actual_arrival_delay_is_returned(built):
+    row = built.execute(
+        "select actual_arr_delay from app_read.propagate(%s) where kind = 'selected'", (fid(built, "101"),)
+    ).fetchone()
+    assert row == (60,)
+
+
+def test_missing_min_turn_is_an_error(built):
+    built.execute("truncate ontology.min_turn")
+    with pytest.raises(psycopg.errors.NoDataFound):
+        chain(built, "101")

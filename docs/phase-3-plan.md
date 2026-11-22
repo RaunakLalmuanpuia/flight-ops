@@ -34,14 +34,17 @@ flight-ops/
 | Object | One row per | Contents |
 |---|---|---|
 | `ontology.min_turn` | carrier, plus one all-carrier row (`carrier_id` NULL) | `samples`, `p10`, `p25`, `p50` in minutes |
-| `app_read.propagate(flight_id, arr_delay_min)` | downstream leg, or cancelled-in-gap flight | `depth`, flight, kind (`flown`, `cancelled`), scheduled departure, `min_turn`, `slack`, `predicted_dep_delay`, `at_risk`, the actual departure delay and `late_aircraft` minutes, and `stop_reason` on the last row |
+| `app_read.propagate(flight_id, arr_delay_min, percentile)` | the selected flight, downstream legs, or cancelled-in-gap flights | `depth`, flight, kind (`selected`, `flown`, `cancelled`), scheduled departure, `min_turn`, `slack`, `predicted_dep_delay`, `at_risk`, the actual departure delay, the actual arrival delay (`actual_arr_delay`) and `late_aircraft` minutes, and `stop_reason` on the last row |
 | `app_read.propagation_backtest` | scored pair, at depth 1-3 and each percentile | late leg, scored leg, depth, percentile, window, predicted delay, actual departure delay, `late_aircraft` minutes (NULL when not reported), and both baselines |
 
-`propagate` takes the selected flight's arrival delay as its starting point. Leaving it NULL uses the actual value. The percentile it uses is fixed in the function once the backtest has chosen it. `propagation_backtest` starts from every flown leg on an ATL-touching tail that arrived 15 min or more late, and uses only that leg's actual arrival and the downstream schedule.
+`propagate` takes the selected flight's arrival delay as its starting point. Leaving it NULL uses the actual value. The percentile stays a parameter, because the backtest needs it. After step 3 the function's default is set to the chosen percentile and the app relies on the default. `propagation_backtest` starts from every flown leg on an ATL-touching tail that arrived 15 min or more late, and uses only that leg's actual arrival and the downstream schedule.
 
 ## Backtest
 
-- **Targets, scored separately:** the scored leg's `late_aircraft` minutes, where reported (blank is excluded, never zero), and its total departure delay. The model should undercount the second, because other causes add delay.
+- **Targets, scored separately:** the scored leg's `late_aircraft` minutes, where reported (reported means arrival delay of 15 min or more; blank is excluded, never zero, and a reported cause with no `ontology.delay` row is 0), and its total departure delay. The model should undercount the second, because other causes add delay.
+- **Scored pairs:** build them from `rotation_leg` (depth k = `leg_seq + k`, k = 1..3) and LEFT JOIN propagate's output. A leg after an `absorbed` stop scores as predicted 0, and pairs past a `break` or `limit` are excluded. Never score only the rows propagate returns, which would drop false negatives.
+- **Build once:** compute the backtest into a table built by the pipeline (or one query in the report), not a plain view that re-runs propagate per read (about 118k late legs x 3 percentiles, at 0.25-0.45 ms per call).
+- **Hindsight caveat:** the flown chain uses the actual order, including swaps. Report beside the in-sample note the count of scored pairs whose next leg's `sched_dep` precedes the late leg's `sched_dep`.
 - **Metrics:** mean absolute error in minutes, and precision and recall for at risk against an actual 15 min or more.
 - **Baselines:** no propagation (predict 0) and full carry (predict the late leg's arrival delay).
 - **Percentile choice:** pick p10, p25 or p50 by the best depth-1 `late_aircraft` error on the normal window, then report the outage window as held out. `min_turn` itself is still measured on all of July, including the outage, so this is not fully out of sample.
@@ -53,6 +56,7 @@ flight-ops/
 - **FlightImpact page** at `/flights/{flight_id}?delay=N`, linked from every flown leg on TailDay and from late arrivals on HubDay.
 - **Header:** the flight, its actual arrival delay, and a delay input that defaults to that value. Submitting reloads the page with `?delay=`.
 - **Chain table:** one row per downstream leg, with predicted and actual side by side. When `delay` differs from the actual value, the actual columns are dimmed and labelled as not comparable. Cancelled-in-gap rows are grey and read "scheduled on this tail, cancelled, not predicted". The last row gives the stop reason.
+- **Diverted start:** decide in step 4 how a diverted start is shown, since diverted flights have `actual_arr_utc` but NULL `arr_delay_min`.
 - **Caveat line:** aircraft-driven delay only. No crew or passenger connections.
 - **Controller:** `delay` must be an integer from 0 to 1440, with Laravel's usual validation response. An unknown or cancelled flight returns 404. One query against `app_read.propagate`, as the existing controllers do.
 
@@ -94,4 +98,4 @@ Measured values go here as steps finish.
 
   No carrier falls below 200 samples (smallest is YX at 311), so the all-carrier fallback is not used in July.
 
-- Checked `app_read.propagate(371994)` (N102DN, July 19) on the real July database. Selected DEN->ATL (316 min late), three cancelled rows at depth 1 (ATL->CLE, CLE->ATL, ATL->GEG), then flown ATL->BWI at depth 1: min turn 58 (DL p25), slack 213, predicted delay 0, `absorbed`. Its actual departure delay was 49 with no `late_aircraft` minutes. `explain analyze` execution time: 3.1 ms.
+- Checked `app_read.propagate(371994)` (N102DN, July 19) on the real July database. Selected DEN->ATL (316 min late), three cancelled rows at depth 1 (ATL->CLE, CLE->ATL, ATL->GEG), then flown ATL->BWI at depth 1: min turn 58 (DL p25), slack 213, predicted delay 0, `absorbed`. Its actual departure delay was 49, arrival delay 28, and `late_aircraft` was a reported 0. `explain analyze` execution time: 3.1 ms for that one call. Over 2,000 real late legs it measured 0.25-0.45 ms per call.

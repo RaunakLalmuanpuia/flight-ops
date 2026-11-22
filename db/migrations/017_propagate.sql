@@ -2,16 +2,21 @@
 -- Raises only when a downstream leg exists, since propagate calls it per leg.
 CREATE FUNCTION app_read.min_turn_for(p_carrier_id bigint, p_percentile integer) RETURNS integer
 LANGUAGE plpgsql STABLE SET search_path = pg_catalog, pg_temp AS $$
+DECLARE v_turn integer;
 BEGIN
     IF p_percentile NOT IN (10, 25, 50) THEN
         RAISE EXCEPTION 'percentile must be 10, 25 or 50, got %', p_percentile USING ERRCODE = 'invalid_parameter_value';
     END IF;
-    RETURN (SELECT CASE p_percentile WHEN 10 THEN m.p10 WHEN 25 THEN m.p25 WHEN 50 THEN m.p50 END
+    SELECT CASE p_percentile WHEN 10 THEN m.p10 WHEN 25 THEN m.p25 WHEN 50 THEN m.p50 END INTO v_turn
     FROM ontology.min_turn m
     WHERE m.carrier_id = p_carrier_id AND m.samples >= 200
        OR m.carrier_id IS NULL
     ORDER BY m.carrier_id NULLS LAST
-    LIMIT 1);
+    LIMIT 1;
+    IF v_turn IS NULL THEN
+        RAISE EXCEPTION 'ontology.min_turn has no all-carrier row (carrier_id NULL)' USING ERRCODE = 'no_data_found';
+    END IF;
+    RETURN v_turn;
 END
 $$;
 REVOKE EXECUTE ON FUNCTION app_read.min_turn_for(bigint, integer) FROM PUBLIC;
@@ -22,7 +27,7 @@ RETURNS TABLE (
     depth integer, kind text, flight_id bigint, carrier text, flight_number text, origin text, dest text,
     sched_dep_utc timestamptz, sched_arr_utc timestamptz, min_turn integer, slack_min integer,
     predicted_dep_delay integer, predicted_arr_utc timestamptz, at_risk boolean,
-    actual_dep_delay integer, actual_late_aircraft integer, stop_reason text
+    actual_dep_delay integer, actual_arr_delay integer, actual_late_aircraft integer, stop_reason text
 )
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog, pg_temp AS $$
 WITH RECURSIVE chain AS (
@@ -73,8 +78,10 @@ SELECT w.depth, w.kind, f.flight_id, ca.code, f.flight_number, o.iata_code, de.i
        CASE WHEN w.kind = 'flown' THEN w.delay END,
        CASE WHEN w.kind <> 'cancelled' AND (w.kind = 'selected' OR w.delay IS NOT NULL) THEN w.arr_utc END,
        CASE WHEN w.kind = 'flown' AND w.delay IS NOT NULL THEN w.delay >= 15 END,
-       f.dep_delay_min,
-       (SELECT y.minutes FROM ontology.delay y WHERE y.flight_id = f.flight_id AND y.cause = 'late_aircraft'),
+       f.dep_delay_min, f.arr_delay_min,
+       -- Causes are reported only at arrival delay >= 15, and delay rows hold minutes > 0, so reported-but-absent is 0.
+       CASE WHEN f.arr_delay_min >= 15 THEN coalesce(
+           (SELECT y.minutes FROM ontology.delay y WHERE y.flight_id = f.flight_id AND y.cause = 'late_aircraft'), 0) END,
        w.stop_reason
 FROM out_legs w
 JOIN ontology.flight f ON f.flight_id = w.flight_id
