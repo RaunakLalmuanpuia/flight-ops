@@ -157,3 +157,21 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a complete count of aircraft that ended the day at ATL.
 - **Why:** such a flight has no scheduled ATL event to assign it an ATL day, and July 2024 has none: 113 diversions nationally ended away from their destination, none at ATL.
 - **Revisit if:** a loaded month has diversions stranded at ATL, or phase 3 needs every aircraft on the ground at the hub.
+
+## 2026-11-22: Build the app on the plain Laravel skeleton, in JavaScript
+- **Chose:** `composer create-project laravel/laravel`, adding Inertia, Vue and Pest by hand. Pages are Vue single-file components in plain JavaScript.
+- **Gave up:** the official Vue starter kit's components and TypeScript checks.
+- **Why:** the kit's value is auth and settings pages, which phase 2 would delete, and the `laravel` installer on this Mac is Herd Lite's old one. Plain JS keeps two pages and a few helpers free of a type build.
+- **Revisit if:** phase 5 adds users, which is when the kit's auth earns its place, or the front end grows past a handful of components.
+
+## 2026-11-22: No login in phase 2
+- **Chose:** no authentication. The app runs locally and reads through a role that cannot write.
+- **Gave up:** any access control, so the app must not be exposed beyond this machine.
+- **Why:** there is nothing to protect that the database role doesn't already, and auth would be the largest part of a two-page app.
+- **Revisit if:** phase 5 records operator decisions, or the app is deployed anywhere.
+
+## 2026-11-22: Test the app against the loaded July database
+- **Chose:** Pest feature tests run as `flightops_app` against the local `flightops` database and assert measured July 2024 values, such as 2,078 flights and 899 cancellations on July 19.
+- **Gave up:** hermetic tests. They need the database loaded and migrated, and they break if the data is rebuilt differently.
+- **Why:** the role cannot write, so the tests cannot seed fixtures without owner rights. The view logic already has fixture tests in pytest, so these tests check the wiring and the real numbers.
+- **Revisit if:** phase 7 containerizes the stack. Then seed a known database for the app tests.
