@@ -285,8 +285,7 @@ SELECT f.flight_date, count(*) AS flights, count(*) FILTER (WHERE f.cancelled) A
        (SELECT count(*) FROM ontology.weather_observation w
         WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date) AS metars,
        (SELECT count(*) FROM ontology.weather_observation w
-        WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date AND (array_to_string(w.weather, ' ') ~ '(TS|\+RA|FG|SN|FZ)'
-       OR coalesce(w.ceiling_ft, 99999) < 1000 OR w.visibility_sm < 3 OR coalesce(w.gust_kt, 0) >= 30)) AS adverse_metars
+        WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date AND ontology.is_adverse(w)) AS adverse_metars
 FROM (SELECT f.* FROM ontology.flight f JOIN ontology.airport a ON a.iata_code = 'ATL'
     WHERE a.airport_id IN (f.origin_airport_id, f.dest_airport_id)) f
 WHERE f.flight_date BETWEEN '2024-07-15' AND '2024-07-27'
@@ -344,8 +343,7 @@ FROM ontology.flight f
 JOIN ontology.airport a ON a.iata_code = 'ATL' AND a.airport_id = f.origin_airport_id
 LEFT JOIN ontology.delay d ON d.flight_id = f.flight_id AND d.cause = 'weather'
 CROSS JOIN LATERAL (
-    SELECT coalesce(bool_or((array_to_string(w.weather, ' ') ~ '(TS|\+RA|FG|SN|FZ)'
-       OR coalesce(w.ceiling_ft, 99999) < 1000 OR w.visibility_sm < 3 OR coalesce(w.gust_kt, 0) >= 30)), false) AS adverse
+    SELECT coalesce(bool_or(ontology.is_adverse(w)), false) AS adverse
     FROM ontology.weather_observation w
     WHERE w.airport_id = a.airport_id AND w.observed_at BETWEEN f.sched_dep_utc - interval '1 hour' AND f.actual_dep_utc
 ) x
@@ -359,8 +357,7 @@ FROM ontology.flight f
 JOIN ontology.airport a ON a.iata_code = 'ATL' AND a.airport_id = f.landed_airport_id
 LEFT JOIN ontology.delay d ON d.flight_id = f.flight_id AND d.cause = 'weather'
 CROSS JOIN LATERAL (
-    SELECT coalesce(bool_or((array_to_string(w.weather, ' ') ~ '(TS|\+RA|FG|SN|FZ)'
-       OR coalesce(w.ceiling_ft, 99999) < 1000 OR w.visibility_sm < 3 OR coalesce(w.gust_kt, 0) >= 30)), false) AS adverse
+    SELECT coalesce(bool_or(ontology.is_adverse(w)), false) AS adverse
     FROM ontology.weather_observation w
     WHERE w.airport_id = a.airport_id AND w.observed_at BETWEEN f.sched_arr_utc - interval '1 hour' AND f.actual_arr_utc
 ) x

@@ -121,3 +121,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** data arriving without anyone acting. A gap over 7 days needs `--from` and `--to`, and costs 60 credits per day collected.
 - **Why:** the user doesn't want a background job on this Mac, and flight history reaches back at least to July 2024, so waiting loses nothing today.
 - **Revisit if:** OpenSky shortens its history, or a later phase needs fresh data every day.
+
+## 2026-11-22: Define adverse weather once, in `ontology`
+- **Chose:** `ontology.is_adverse(weather_observation)`, used by the report and by the app's views. It never returns NULL: missing fields count as not adverse.
+- **Gave up:** a definition that sits beside the report's prose. A reader of the report now follows the function name to the migration.
+- **Why:** phase 2 shades adverse hours on the timeline. Two copies of the rule would drift, and the earlier entry said to move it into `ontology` once a second reader needed it.
+- **Revisit if:** phase 3 tests weather as a delay predictor. Then check the rule against delays instead of keeping it by judgment.

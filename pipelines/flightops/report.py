@@ -28,9 +28,6 @@ FINDINGS = """## Findings
 OpenSky data is from The OpenSky Network, https://opensky-network.org, cited as: Matthias Schäfer, Martin Strohmeier, Vincent Lenders, Ivan Martinovic and Matthias Wilhelm. "Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research". In Proceedings of the 13th IEEE/ACM International Symposium on Information Processing in Sensor Networks (IPSN), pages 83-94, April 2014.
 """
 
-ADVERSE = r"""(array_to_string(w.weather, ' ') ~ '(TS|\+RA|FG|SN|FZ)'
-       OR coalesce(w.ceiling_ft, 99999) < 1000 OR w.visibility_sm < 3 OR coalesce(w.gust_kt, 0) >= 30)"""
-
 ATL_FLIGHTS = """SELECT f.* FROM ontology.flight f JOIN ontology.airport a ON a.iata_code = 'ATL'
     WHERE a.airport_id IN (f.origin_airport_id, f.dest_airport_id)"""
 
@@ -42,7 +39,7 @@ FROM ontology.flight f
 JOIN ontology.airport a ON a.iata_code = 'ATL' AND a.airport_id = f.{column}
 LEFT JOIN ontology.delay d ON d.flight_id = f.flight_id AND d.cause = 'weather'
 CROSS JOIN LATERAL (
-    SELECT coalesce(bool_or({adverse}), false) AS adverse
+    SELECT coalesce(bool_or(ontology.is_adverse(w)), false) AS adverse
     FROM ontology.weather_observation w
     WHERE w.airport_id = a.airport_id AND w.observed_at BETWEEN f.{start} - interval '1 hour' AND f.{end}
 ) x
@@ -119,7 +116,7 @@ FROM ontology.flight_weather GROUP BY 1, 2 ORDER BY 1, 2""",
        (SELECT count(*) FROM ontology.weather_observation w
         WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date) AS metars,
        (SELECT count(*) FROM ontology.weather_observation w
-        WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date AND {ADVERSE}) AS adverse_metars
+        WHERE (w.observed_at AT TIME ZONE 'America/New_York')::date = f.flight_date AND ontology.is_adverse(w)) AS adverse_metars
 FROM ({ATL_FLIGHTS}) f
 WHERE f.flight_date BETWEEN '2024-07-15' AND '2024-07-27'
 GROUP BY 1 ORDER BY 1""",
@@ -137,9 +134,9 @@ GROUP BY 1 ORDER BY 3 DESC, 1 LIMIT 8""",
         "Weather delays against observed weather",
         "ATL flights with an arrival delay of 15 minutes or more, the only ones where BTS reports causes. "
         "The window runs from an hour before the scheduled time to the actual time.",
-        CROSS_CHECK.format(label="departing ATL", column="origin_airport_id", start="sched_dep_utc", end="actual_dep_utc", adverse=ADVERSE)
+        CROSS_CHECK.format(label="departing ATL", column="origin_airport_id", start="sched_dep_utc", end="actual_dep_utc")
         + "UNION ALL"
-        + CROSS_CHECK.format(label="arriving ATL", column="landed_airport_id", start="sched_arr_utc", end="actual_arr_utc", adverse=ADVERSE)
+        + CROSS_CHECK.format(label="arriving ATL", column="landed_airport_id", start="sched_arr_utc", end="actual_arr_utc")
         + "ORDER BY 1 DESC, 2",
     ),
     (
