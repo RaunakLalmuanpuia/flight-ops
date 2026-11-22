@@ -187,3 +187,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** staying on the same date when drilling down. An overnight inbound flight on the July 20 hub opens its tail on July 19.
 - **Why:** the hub files flights by their ATL event and the tail page by departure. Linking by hub day opened 438 July pages with the clicked flight outside the day, and 12 that showed no legs at all.
 - **Revisit if:** the walkthrough shows the date change confuses more than the mismatch did. Then widen the tail page's day to include arrivals at ATL.
+
+## 2026-11-22: Measure minimum turn per carrier from July
+- **Chose:** `ontology.min_turn`, holding p10, p25 and p50 of observed turns where the next leg reported `late_aircraft` minutes, per carrier and for all carriers. A carrier with under 200 samples uses the all-carrier row.
+- **Gave up:** turn times by airport or aircraft type, and a figure measured outside the month being backtested. The outage days are among the samples.
+- **Why:** turns differ by about 20 min between carriers at p10 (OH 28, DL 50), so one constant would be wrong for most of them. Finer cells get few samples, and 1.2% of flights have no aircraft type.
+- **Revisit if:** a second month is loaded. Then measure on one month and backtest on the other.

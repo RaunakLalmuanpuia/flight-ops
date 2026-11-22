@@ -23,5 +23,6 @@ def build(conn) -> None:
     checks.run(conn, "blocking")  # a failure here leaves the previous ontology untouched
     run_sql(conn, "resolve/ontology.sql")
     run_sql(conn, "rotations/rotations.sql")
+    run_sql(conn, "rotations/min_turn.sql")
     run_sql(conn, "resolve/flight_weather.sql")
     checks.run(conn, "reported")

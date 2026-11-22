@@ -74,4 +74,22 @@ flight-ops/
 
 Measured values go here as steps finish.
 
-- July turns on ATL-touching tails where the next leg had `late_aircraft` minutes, p10/p25/p50 in minutes: WN 38/44/52 (25,094 samples), AA 42/49/59 (12,343), DL 50/58/69 (10,690), OH 28/33/41 (3,541), 9E 34/39/46 (1,964).
+- Measured `ontology.min_turn` for July (turns on ATL-touching tails where the next leg had `late_aircraft` minutes), p10/p25/p50 in minutes:
+
+  | Carrier | Samples | p10 | p25 | p50 |
+  |---|---|---|---|---|
+  | all | 69,476 | 39 | 47 | 57 |
+  | WN | 25,094 | 38 | 44 | 52 |
+  | AA | 12,343 | 42 | 49 | 59 |
+  | DL | 10,689 | 50 | 58 | 69 |
+  | UA | 4,708 | 46 | 52 | 61 |
+  | F9 | 4,133 | 44 | 51 | 60 |
+  | OH | 3,541 | 28 | 33 | 41 |
+  | NK | 2,872 | 47 | 53 | 61 |
+  | 9E | 1,964 | 34 | 39 | 46 |
+  | AS | 1,435 | 51 | 55 | 60 |
+  | MQ | 1,341 | 29 | 33 | 39 |
+  | B6 | 1,045 | 42 | 50 | 58 |
+  | YX | 311 | 28 | 32 | 40 |
+
+  No carrier falls below 200 samples (smallest is YX at 311), so the all-carrier fallback is not used in July.
