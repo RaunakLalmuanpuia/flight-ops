@@ -5,7 +5,7 @@ import pytest
 
 from flightops import pipeline
 
-D19, D20 = date(2024, 7, 19), date(2024, 7, 20)
+D19, D20, D21 = date(2024, 7, 19), date(2024, 7, 20), date(2024, 7, 21)
 
 
 @pytest.fixture
@@ -111,6 +111,7 @@ def test_tail_legs_include_cancelled_flights_and_label_gaps(built):
         ("11", 2, D19, True, 95, None, "ORD"),
         ("12", None, D19, None, None, None, None),
         ("13", 3, D19, False, 275, "Likely flew legs BTS does not report", "ATL"),
+        ("19", None, D21, None, None, None, None),
     ]
 
 
@@ -133,7 +134,60 @@ def test_tails_that_never_touched_atl_are_absent(built):
 def test_tail_aircraft_gives_the_unresolved_reason(built):
     assert built.execute(
         "select model, confidence, unresolved_reason, flights from app_read.tail_aircraft where tail_number = 'N1A'"
-    ).fetchall() == [(None, None, "no_faa_record", 4)]
+    ).fetchall() == [(None, None, "no_faa_record", 5)]
+
+
+def test_tail_aircraft_spans_the_atl_days_of_its_flights(built):
+    assert built.execute(
+        "select first_day, last_day from app_read.tail_aircraft where tail_number = 'N1A'"
+    ).fetchone() == (D19, D21)
+
+
+def test_leg_order_covers_cancelled_and_flown_legs(built):
+    assert built.execute(
+        "select flight_number, leg_order from app_read.tail_legs where tail_number = 'N1A' order by leg_order"
+    ).fetchall() == [("10", 1), ("11", 2), ("12", 3), ("13", 4), ("19", 5)]
+
+
+def test_neighbour_legs_of_an_all_cancelled_day(built):
+    assert built.execute(
+        "select flight_number from app_read.tail_legs where tail_number = 'N1A' and leg_order between "
+        "(select min(leg_order) from app_read.tail_legs where tail_number = 'N1A' and leg_day = %s) - 1 and "
+        "(select max(leg_order) from app_read.tail_legs where tail_number = 'N1A' and leg_day = %s) + 1 "
+        "order by leg_order",
+        (D21, D21),
+    ).fetchall() == [("13",), ("19",)]
+
+
+def test_no_tail_is_not_an_unresolved_aircraft(built):
+    assert by_flight(
+        built,
+        "select flight_number, no_tail, aircraft_unresolved from app_read.hub_day_flights where atl_day = %s",
+        (D21,),
+    ) == {"20": (True, False), "19": (False, True)}
+    assert built.execute(
+        "select no_tail, aircraft_unresolved from app_read.hub_day_caveats where atl_day = %s", (D21,)
+    ).fetchone() == (1, 1)
+
+
+def test_diverted_leg_carries_its_landed_timezone(built):
+    assert built.execute(
+        "select landed, landed_tz from app_read.tail_legs where flight_number = '15'"
+    ).fetchone() == ("CLE", "America/New_York")
+
+
+def test_tail_legs_carry_each_legs_aircraft_link(conn, load_fixture):
+    load_fixture("ourairports_airports", "airports.csv")
+    load_fixture("bts_ontime", "bts_tail_links.csv")  # bts_tails.csv has no actual times, so build() blocks on it
+    load_fixture("faa_master", "faa_master.csv")
+    load_fixture("faa_dereg", "faa_dereg.csv")
+    load_fixture("faa_acftref", "faa_acftref.csv")
+    pipeline.build(conn)
+    rows = conn.execute(
+        "select tail_number, aircraft_link_confidence, aircraft_id is not null from app_read.tail_legs "
+        "where tail_number in ('N100A', 'N500A') order by 1"
+    ).fetchall()
+    assert rows == [("N100A", "high", True), ("N500A", "medium", True)]
 
 
 @pytest.mark.parametrize(
@@ -156,13 +210,14 @@ def test_unknown_break_cause_shows_as_delivered(conn):
 
 
 def test_day_range_is_the_bts_flight_dates(built):
-    assert built.execute("select first_day, last_day from app_read.day_range").fetchone() == (D19, D19)
+    assert built.execute("select first_day, last_day from app_read.day_range").fetchone() == (D19, D21)
 
 
 def test_app_role_reads_app_read_only(built):
     built.execute("SET ROLE flightops_app")
     try:
-        assert built.execute("select count(*) from app_read.hub_day_flights").fetchone() == (7,)
+        assert built.execute("select count(*) from app_read.hub_day_flights").fetchone() == (9,)
+        assert built.execute("select count(*) from app_read.hub_day_weather").fetchone()[0] > 0
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             built.execute("select 1 from ontology.flight")
     finally:

@@ -39,10 +39,10 @@ This schema holds views and one function, and no data. Pipelines own it through 
 | `hub_day_weather` | ATL METAR | `atl_day`, local hour, `adverse`, wind, gust, visibility, ceiling, weather and raw text |
 | `hub_day_flights` | flight touching ATL | Times, carrier, other station, tail, status, delays, METAR, and the caveat flags `metar_stale`, `block_mismatch`, `aircraft_unresolved`, `aircraft_medium_confidence` and `rotation_break` |
 | `hub_day_caveats` | day | Counts of each caveat flag |
-| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), the ATL local day of scheduled departure, gap minutes, break label, previous station, delays and the ATL METAR |
+| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), `leg_order` (numbers every leg, cancelled included), the aircraft link of each leg (`aircraft_id`, manufacturer, model, link method and confidence), the ATL local day of scheduled departure, gap minutes, break label, previous station, delays and the ATL METAR |
 | `tail_aircraft` | tail × linked aircraft | Manufacturer, model, link method and confidence, or the unresolved reason |
 
-Day boundaries, the adverse rule and break labels live only in SQL. PHP filters by `atl_day`, `tail_number` and `leg_seq`, and nothing more.
+Day boundaries, the adverse rule and break labels live only in SQL. PHP filters by `atl_day`, `tail_number` and `leg_order`, and nothing more.
 
 ## App
 
@@ -90,3 +90,4 @@ Charts are hand-written SVG. There is no chart or date library.
 - **Edge days:** the app offers July 1-31, the BTS `flight_date` range. July 1 lacks inbound flights that departed on June 30, and the 40 flights whose ATL day is August 1 are not offered.
 - **Query times on July 19 (ms):** hub flights 168, hourly 35, caveats 37, weather 1, N102DN legs 43, N102DN aircraft 2.
 - **Changes from the design during step 1:** the adverse rule lives in `ontology`, not `app_read`. Migrations are `011_is_adverse.sql` and `012_app_read.sql`. Added `day_range`, `tail_aircraft` and `break_label`. The hourly view counts flights by status rather than summing delay minutes by cause, since the bars use status. A flight with no METAR counts as stale.
+- **013 after review:** `leg_order` replaces `leg_seq` for neighbour legs, because 104 tails on July 19 have only cancelled legs. `tail_legs` carries each leg's aircraft link, since 14 ATL tails change link within the month. `aircraft_unresolved` no longer counts the 152 cancelled flights with no tail reported, which get a separate `no_tail` flag. The regenerated phase 1 report differs from the old one only in its embedded SQL, with no table row changed.
