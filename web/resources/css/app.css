@@ -2,3 +2,7 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+
+@utility badge {
+    @apply rounded px-1.5 py-0.5 text-xs font-medium;
+}
