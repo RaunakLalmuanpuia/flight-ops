@@ -1,0 +1,10 @@
+flightdate,reporting_airline,tail_number,flight_number_reporting_airline,origin,dest,crsdeptime,deptime,depdelay,crsarrtime,arrtime,arrdelay,crselapsedtime,actualelapsedtime,cancelled,cancellationcode,diverted,divreacheddest,div1airport,div1wheelson,carrierdelay,weatherdelay,nasdelay,securitydelay,lateaircraftdelay
+2024-07-19,DL,N1A,10,ATL,ORD,0800,0800,0.00,0855,0855,0.00,115.00,115.00,0.00,,0.00,,,,,,,,
+2024-07-19,DL,N1A,11,ORD,ATL,1000,1030,30.00,1255,1325,30.00,115.00,115.00,0.00,,0.00,,,,10.00,0.00,0.00,0.00,20.00
+2024-07-19,DL,N1A,12,ATL,LGA,1400,,,1615,,,135.00,,1.00,A,0.00,,,,,,,,
+2024-07-19,DL,N1A,13,LGA,ATL,1800,1800,0.00,2015,2015,0.00,135.00,135.00,0.00,,0.00,,,,,,,,
+2024-07-19,DL,N2A,14,LAX,ATL,2300,2300,0.00,0630,0630,0.00,270.00,270.00,0.00,,0.00,,,,,,,,
+2024-07-19,DL,N3A,15,ORD,ATL,1400,1400,0.00,1655,,,115.00,,0.00,,1.00,0.00,CLE,1630,,,,,
+2024-07-19,DL,N4A,16,ORD,LGA,0800,0800,0.00,1100,1100,0.00,120.00,120.00,0.00,,0.00,,,,,,,,
+2024-07-19,DL,N3A,18,CLE,LGA,1900,1900,0.00,2030,2030,0.00,90.00,90.00,0.00,,0.00,,,,,,,,
+2024-07-19,DL,N5A,17,ATL,ORD,0700,0700,0.00,0755,0755,0.00,115.00,115.00,0.00,,0.00,,,,,,,,
