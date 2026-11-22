@@ -4,9 +4,9 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 1, built. Steps 1-7 are done, and a fresh database reproduces the counts.
-- **Next action:** phase 2, which needs brainstorming first.
-- **Built so far:** migration runner, idempotent raw loader with quarantine, downloads, staging, tail resolution, ontology promotion behind blocking checks, rotations, the ATL weather join, the generated report and the CLI. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
+- **Current phase:** 2, in progress. Steps 1-2 are done: the `app_read` views and the shared `ontology.is_adverse`.
+- **Next action:** plan steps 3-5 of `docs/phase-2-plan.md` (Laravel skeleton, HubDay, TailDay).
+- **Built so far:** phase 1 in full (see `docs/phase-1-plan.md`), plus `app_read` views read by the `flightops_app` role. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands (from `pipelines/`):** `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`.
 - **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed.
 

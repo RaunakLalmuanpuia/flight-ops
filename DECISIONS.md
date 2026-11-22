@@ -127,3 +127,33 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a definition that sits beside the report's prose. A reader of the report now follows the function name to the migration.
 - **Why:** phase 2 shades adverse hours on the timeline. Two copies of the rule would drift, and the earlier entry said to move it into `ontology` once a second reader needed it.
 - **Revisit if:** phase 3 tests weather as a delay predictor. Then check the rule against delays instead of keeping it by judgment.
+
+## 2026-11-22: Serve the app from SQL views in `app_read`
+- **Chose:** views and small functions in an `app_read` schema, owned by pipelines' migrations and tested with pytest. Laravel runs plain queries against them.
+- **Gave up:** Eloquent models and Laravel-only tests, so each app feature spans SQL and PHP, and a view change needs a migration.
+- **Why:** the ATL day, adverse weather and break labels are data rules. Keeping them beside the pipelines means one definition, tested against the same fixtures as the data.
+- **Revisit if:** a page needs per-request logic that SQL expresses badly, or a view grows slow enough to need materializing.
+
+## 2026-11-22: Assign each ATL flight to the ATL local day of its scheduled ATL event
+- **Chose:** departures by scheduled departure and arrivals by scheduled arrival, both in Atlanta local time. Cancelled flights keep their day. The app offers the BTS `flight_date` range, July 1-31.
+- **Gave up:** agreement with BTS `FlightDate`. July 19 shows 899 cancellations, not the report's 895, and July 1 is missing inbound flights that departed June 30.
+- **Why:** a hub controller's day runs midnight to midnight local time, and an LAX red-eye landing at 06:30 belongs to the morning it lands.
+- **Revisit if:** a second month is loaded. Then the edge days fill in and the range can follow ATL days.
+
+## 2026-11-22: Flag a METAR older than 90 minutes as stale
+- **Chose:** a flight whose ATL METAR is more than 90 minutes old at its ATL event, or which has none, gets a stale-weather caveat. The METAR is the one at the actual event when there was one, otherwise the scheduled one.
+- **Gave up:** a threshold drawn from data, so the number is open to challenge.
+- **Why:** METARs come about hourly, so one hour old is normal. Past 90 minutes a routine report has been missed, and the weather shown may not be what the flight met.
+- **Revisit if:** the caveat fires on most flights on a normal day, which would mean the observation feed has gaps worth fixing instead.
+
+## 2026-11-22: Enforce the app's read-only access with a database role
+- **Chose:** a `flightops_app` login with `SELECT` on `app_read` only. The views read `ontology` and `dq` with their owner's rights.
+- **Gave up:** connecting the app as the owner, which is simpler. The app also can't query `ontology` directly, even for a quick look.
+- **Why:** "the app never writes" becomes a guarantee the database checks, not a convention, and the app can only see what `app_read` chooses to show.
+- **Revisit if:** phase 5 adds write-backs. Grant that role rights on `app` only.
+
+## 2026-11-22: Leave flights diverted into ATL out of the hub day
+- **Chose:** the hub views include a flight only when ATL is its scheduled origin or destination. A flight bound elsewhere that diverts and stays at ATL still appears on its tail's page.
+- **Gave up:** a complete count of aircraft that ended the day at ATL.
+- **Why:** such a flight has no scheduled ATL event to assign it an ATL day, and July 2024 has none: 113 diversions nationally ended away from their destination, none at ATL.
+- **Revisit if:** a loaded month has diversions stranded at ATL, or phase 3 needs every aircraft on the ground at the hub.

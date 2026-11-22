@@ -83,3 +83,10 @@ Charts are hand-written SVG. There is no chart or date library.
 - `/day/2024-07-19` shows cancellations that match a direct SQL count using the ATL day definition. The report's 895 counts by `FlightDate`, so any difference is explained in the plan's notes.
 - The browser walkthrough shows the outage spike against a mostly clear METAR strip, and one click reaches a broken rotation with its labelled gap.
 - An insert attempted as `flightops_app` fails.
+
+## Notes
+
+- **July 19 cancellations:** 899 by ATL day against 895 by `FlightDate` in the phase 1 report. The difference is flights whose scheduled ATL event falls on a different local date from their scheduled departure date, mostly late inbound flights from the west.
+- **Edge days:** the app offers July 1-31, the BTS `flight_date` range. July 1 lacks inbound flights that departed on June 30, and the 40 flights whose ATL day is August 1 are not offered.
+- **Query times on July 19 (ms):** hub flights 168, hourly 35, caveats 37, weather 1, N102DN legs 43, N102DN aircraft 2.
+- **Changes from the design during step 1:** the adverse rule lives in `ontology`, not `app_read`. Migrations are `011_is_adverse.sql` and `012_app_read.sql`. Added `day_range`, `tail_aircraft` and `break_label`. The hourly view counts flights by status rather than summing delay minutes by cause, since the bars use status. A flight with no METAR counts as stale.
