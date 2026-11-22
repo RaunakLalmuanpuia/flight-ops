@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import CaveatPanel from '../components/CaveatPanel.vue';
 import DayNav from '../components/DayNav.vue';
 import DayTimeline from '../components/DayTimeline.vue';
@@ -20,6 +20,7 @@ const LEGEND = [
     <main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">ATL · {{ day }} <span class="text-sm font-normal text-slate-500">(Atlanta local time)</span></h1>
+            <Link href="/live" class="text-sm text-sky-700 underline">ATL live →</Link>
             <DayNav :day="day" :range="range" base="/day" />
         </header>
 
