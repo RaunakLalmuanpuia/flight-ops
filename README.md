@@ -2,7 +2,7 @@
 
 An airline operations model for one US hub, Atlanta (ATL). It takes messy public aviation data, turns it into a trusted operational model of flights, aircraft and weather, and answers questions an operations controller would ask.
 
-Phase 1 is built: a reproducible data foundation and a data-quality report on July 2024, the month of the CrowdStrike outage.
+Phases 1 and 2 are built: a reproducible data foundation with a data-quality report on July 2024, the month of the CrowdStrike outage, and a read-only ops console that shows what happened at ATL on any day and to any aircraft.
 
 ## What the data shows
 
@@ -12,6 +12,18 @@ From the generated [Phase 1 report](docs/phase-1-report.md):
 - **Weather was mild when it started.** On July 19, 0 of 25 METARs were adverse, yet 895 flights were cancelled.
 - **An independent source agrees.** OpenSky ADS-B arrivals for Delta and Endeavor fell by 39-48% on the worst days, against 38-52% in airline-reported BTS data. Daily counts correlate at 0.996 across the month.
 - **The model holds together.** 98.70% of consecutive aircraft legs connect, and 98.8% of flights with a tail number resolve to a registered airframe. Every unresolved row keeps a reason.
+
+## The ops console
+
+![ATL on July 19, 2024](docs/screenshots/hub-2024-07-19.png)
+
+- **Pick a day, see the hub.** Departures and arrivals by local hour, split by status, over a strip of the METARs for the same hours. July 19 is a wall of cancellations under clear skies. July 10 is a normal day with storms.
+- **Data problems show where they matter.** Each day lists its caveats (rotation breaks, unresolved or medium-confidence aircraft, stale weather, missing tails), and every flight row carries its own.
+- **Drill into an aircraft.** One click opens a tail's legs for the day, plus the legs either side: scheduled and actual bars on an Atlanta-time axis, delay causes, unflown cancellations and labelled gaps where the rotation breaks.
+
+![N102DN on July 19, 2024](docs/screenshots/tail-N102DN-2024-07-19.png)
+
+The app reads through a database role that can only select from a schema of views, so the rules for days, statuses and labels live in tested SQL, and the app cannot write.
 
 ## How it works
 
@@ -33,7 +45,7 @@ Trade-offs are logged in [DECISIONS.md](DECISIONS.md), and the plan for later ph
 
 ## Stack
 
-Python (uv, pytest), PostgreSQL, SQL. The app layer planned for phase 2 is Laravel, Inertia and Vue.
+Python (uv, pytest), PostgreSQL and SQL for the pipelines. Laravel 13, Inertia and Vue for the app, tested with Pest and `node --test`.
 
 ## Run it
 
@@ -47,6 +59,19 @@ uv run --env-file ../.env pytest
 ```
 
 Downloaded source files land in `data/`, which is not committed.
+
+To run the app once the pipeline has built the database:
+
+```sh
+cd web
+composer install && npm install
+cp .env.example .env && php artisan key:generate
+npm run build
+php artisan serve      # http://127.0.0.1:8000
+./vendor/bin/pest      # tests run against the loaded database
+```
+
+The app connects as `flightops_app`, a read-only role the migrations create without a password. That assumes local trust authentication, as Postgres.app sets up by default.
 
 ## Data sources
 
