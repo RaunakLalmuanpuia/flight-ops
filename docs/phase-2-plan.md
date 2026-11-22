@@ -86,7 +86,7 @@ Charts are hand-written SVG. There is no chart or date library.
 
 ## Notes
 
-- **July 19 cancellations:** 899 by ATL day against 895 by `FlightDate` in the phase 1 report. The difference is flights whose scheduled ATL event falls on a different local date from their scheduled departure date, mostly late inbound flights from the west.
+- **July 19 cancellations:** 899 by ATL day against 895 by `FlightDate` in the phase 1 report. The days swap overnight inbound flights: 24 cancelled flights scheduled to depart on July 18 land at ATL on July 19, and 20 scheduled on July 19 land on July 20, a net of 4. 41 of the 44 depart from west of ATL's timezone, mostly late-evening departures from the West Coast.
 - **Edge days:** the app offers July 1-31, the BTS `flight_date` range. July 1 lacks inbound flights that departed on June 30, and the 40 flights whose ATL day is August 1 are not offered.
 - **Query times on July 19 (ms):** hub flights 168, hourly 35, caveats 37, weather 1, N102DN legs 43, N102DN aircraft 2.
 - **Changes from the design during step 1:** the adverse rule lives in `ontology`, not `app_read`. Migrations are `011_is_adverse.sql` and `012_app_read.sql`. Added `day_range`, `tail_aircraft` and `break_label`. The hourly view counts flights by status rather than summing delay minutes by cause, since the bars use status. A flight with no METAR counts as stale.
