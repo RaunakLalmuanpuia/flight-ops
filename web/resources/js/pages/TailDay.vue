@@ -26,7 +26,7 @@ defineProps({ tail: String, day: String, range: Object, aircraft: Array, legs: A
             </p>
         </section>
 
-        <p class="text-xs text-slate-500">Grey bar: scheduled. Dark bar: actual (amber when 15+ minutes late). Faded rows are the legs either side of this day.</p>
+        <p class="text-xs text-slate-500">Grey bar: scheduled. Dark bar: actual (amber when 15+ minutes late). The shaded band is this day in Atlanta time. A leg belongs to the ATL date of its scheduled departure. Row dates are local at the origin. Faded rows are the legs either side of this day.</p>
 
         <TailLegs v-if="legs.length" :legs="legs" :day="day" />
         <p v-else class="text-slate-500">No legs on this day.</p>

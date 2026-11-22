@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { axis, bar, gapLabel, hoursMinutes } from './legs.js';
+import { axis, bar, dayBand, dayMarks, gapLabel, hoursMinutes, lateText } from './legs.js';
 
 const legs = [
     { sched_dep_utc: '2024-07-19 12:00:00+00', sched_arr_utc: '2024-07-19 14:00:00+00', actual_dep_utc: null, actual_arr_utc: null },
@@ -30,4 +30,32 @@ test('minutes read as hours and minutes', () => {
     assert.equal(hoursMinutes(275), '4h 35m');
     assert.equal(hoursMinutes(45), '45m');
     assert.equal(hoursMinutes(-20), '-20m');
+});
+
+const NY = 'America/New_York';
+const wide = { start: Date.parse('2024-07-18T20:00:00Z'), end: Date.parse('2024-07-20T20:00:00Z') };
+
+test('day marks sit at each local midnight inside the span', () => {
+    const marks = dayMarks(wide, NY);
+    assert.deepEqual(marks.map((m) => m.day), ['2024-07-19', '2024-07-20']);
+    assert.ok(Math.abs(marks[0].left - (8 / 48) * 100) < 1e-9);
+    assert.ok(Math.abs(marks[1].left - (32 / 48) * 100) < 1e-9);
+});
+
+test('day band covers the local day, clamped to the span', () => {
+    const b = dayBand('2024-07-19', wide, NY);
+    assert.ok(Math.abs(b.left - (8 / 48) * 100) < 1e-9);
+    assert.ok(Math.abs(b.width - 50) < 1e-9);
+    const c = dayBand('2024-07-20', wide, NY);
+    assert.ok(Math.abs(c.left - (32 / 48) * 100) < 1e-9);
+    assert.ok(Math.abs(c.width - (16 / 48) * 100) < 1e-9);
+    assert.equal(dayBand('2024-07-25', wide, NY), null);
+});
+
+test('late text names the delayed parts, and is null on time', () => {
+    assert.equal(lateText({ dep_delay_min: 31, arr_delay_min: 9 }), 'dep +31 min · arr +9 min');
+    assert.equal(lateText({ dep_delay_min: 316, arr_delay_min: 316 }), 'dep +316 min · arr +316 min');
+    assert.equal(lateText({ dep_delay_min: null, arr_delay_min: 20 }), 'arr +20 min');
+    assert.equal(lateText({ dep_delay_min: 5, arr_delay_min: 14 }), null);
+    assert.equal(lateText({ dep_delay_min: null, arr_delay_min: null }), null);
 });

@@ -235,3 +235,13 @@ def test_app_role_cannot_write(built, statement):
             built.execute(statement)
     finally:
         built.execute("RESET ROLE")
+
+
+def test_leg_order_follows_schedule_so_a_cancelled_leg_never_jumps_ahead(conn, load_fixture):
+    load_fixture("ourairports_airports", "airports.csv")
+    load_fixture("bts_ontime", "bts_leg_order.csv")
+    load_fixture("iem_metar", "metar_join.csv")
+    pipeline.build(conn)
+    assert conn.execute(
+        "select flight_number, leg_order from app_read.tail_legs where tail_number = 'N7A' order by leg_order"
+    ).fetchall() == [("30", 1), ("31", 2)]

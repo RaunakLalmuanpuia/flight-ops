@@ -1,4 +1,4 @@
-import { toDate } from './time.js';
+import { shiftDay, toDate, zonedMidnight } from './time.js';
 
 export const REASONS = {
     no_faa_record: 'no FAA registration found for this tail',
@@ -31,4 +31,31 @@ export function gapLabel(leg) {
 export function hoursMinutes(minutes) {
     if (Math.abs(minutes) < 60) return `${minutes}m`;
     return `${Math.trunc(minutes / 60)}h ${Math.abs(minutes % 60)}m`;
+}
+
+// Local midnights strictly inside the span, as percent of it.
+export function dayMarks({ start, end }, timeZone) {
+    const marks = [];
+    const length = end - start || 1;
+    let day = new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date(start));
+    for (let at = zonedMidnight(day, timeZone); at < end; day = shiftDay(day, 1), at = zonedMidnight(day, timeZone)) {
+        if (at > start) marks.push({ day, left: ((at - start) / length) * 100 });
+    }
+    return marks;
+}
+
+// The part of the span covered by one local day, or null.
+export function dayBand(day, { start, end }, timeZone) {
+    const from = Math.max(zonedMidnight(day, timeZone), start);
+    const to = Math.min(zonedMidnight(shiftDay(day, 1), timeZone), end);
+    if (to <= from) return null;
+    const length = end - start || 1;
+    return { left: ((from - start) / length) * 100, width: ((to - from) / length) * 100 };
+}
+
+export function lateText(leg) {
+    const dep = leg.dep_delay_min;
+    const arr = leg.arr_delay_min;
+    if (!(dep >= 15 || arr >= 15)) return null;
+    return [dep != null && `dep +${dep} min`, arr != null && `arr +${arr} min`].filter(Boolean).join(' · ');
 }

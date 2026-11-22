@@ -27,3 +27,17 @@ export function shiftDay(day, days) {
     date.setUTCDate(date.getUTCDate() + days);
     return date.toISOString().slice(0, 10);
 }
+
+export function shortDate(day) {
+    return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' }).format(new Date(`${day}T00:00:00Z`));
+}
+
+// UTC instant of local midnight starting `day`: shift a UTC guess by the zone's offset at that instant.
+export function zonedMidnight(day, timeZone) {
+    const guess = Date.parse(`${day}T00:00:00Z`);
+    const p = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })
+            .formatToParts(new Date(guess)).map((x) => [x.type, +x.value]),
+    );
+    return guess - (Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - guess);
+}

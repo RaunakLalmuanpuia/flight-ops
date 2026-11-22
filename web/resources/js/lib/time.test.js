@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { localDate, localTime, shiftDay, toDate, utcTitle } from './time.js';
+import { localDate, localTime, shiftDay, shortDate, toDate, utcTitle, zonedMidnight } from './time.js';
 
 test('parses Postgres timestamptz with short and long offsets', () => {
     assert.equal(toDate('2024-07-19 12:00:00+00').toISOString(), '2024-07-19T12:00:00.000Z');
@@ -26,4 +26,13 @@ test('UTC title for hover', () => {
 test('shiftDay crosses month ends', () => {
     assert.equal(shiftDay('2024-07-31', 1), '2024-08-01');
     assert.equal(shiftDay('2024-07-01', -1), '2024-06-30');
+});
+
+test('local midnight is found across daylight saving', () => {
+    assert.equal(zonedMidnight('2024-07-19', 'America/New_York'), Date.parse('2024-07-19T04:00:00Z'));
+    assert.equal(zonedMidnight('2024-01-15', 'America/New_York'), Date.parse('2024-01-15T05:00:00Z'));
+});
+
+test('short date reads month and day', () => {
+    assert.equal(shortDate('2024-07-20'), 'Jul 20');
 });

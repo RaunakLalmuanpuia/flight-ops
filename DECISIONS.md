@@ -175,3 +175,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** hermetic tests. They need the database loaded and migrated, and they break if the data is rebuilt differently.
 - **Why:** the role cannot write, so the tests cannot seed fixtures without owner rights. The view logic already has fixture tests in pytest, so these tests check the wiring and the real numbers.
 - **Revisit if:** phase 7 containerizes the stack. Then seed a known database for the app tests.
+
+## 2026-11-22: Order a tail's legs by scheduled departure
+- **Chose:** `tail_legs.leg_order` sorts every leg, flown or cancelled, by scheduled departure.
+- **Gave up:** actual-time order for flown legs, which differs only when an aircraft's legs swap or a delay pushes one leg past the next one's schedule.
+- **Why:** a cancelled leg has no actual time. Mixing its scheduled time with other legs' actual times put N102DN's cancelled ATL→CLE before the late DEN→ATL that should have fed it, so the aircraft appeared to leave Atlanta before arriving.
+- **Revisit if:** phase 3's delay propagation needs the flown order. `leg_seq` still holds it.
