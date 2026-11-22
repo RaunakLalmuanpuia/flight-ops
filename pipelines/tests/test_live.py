@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -81,3 +81,27 @@ def test_repeated_metars_are_kept_once_and_parsed(conn, built):
 
 def test_latest_taf_only(conn, built):
     assert conn.execute("SELECT raw_text FROM ontology.live_taf").fetchall() == [("TAF KATL new",)]
+
+
+def test_live_weather_view_flags_adverse_and_stale(conn, built):
+    rows = conn.execute("SELECT metar_type, adverse, stale, observed_at FROM app_read.live_weather ORDER BY observed_at").fetchall()
+    # 2SM and an 800 ft ceiling are both adverse
+    assert [(t, a) for t, a, _, _ in rows] == [("METAR", True), ("SPECI", True)]
+    now = datetime.now(timezone.utc)
+    assert [s for _, _, s, _ in rows] == [now - o > timedelta(minutes=90) for _, _, _, o in rows]
+
+
+def test_live_aircraft_view_gives_position_age_and_no_july_link_without_july_data(conn, built):
+    rows = dict(conn.execute("SELECT hex, position_age_s FROM app_read.live_aircraft").fetchall())
+    assert rows["A00001"] == 5 and rows["FFFFFF"] is None
+    assert conn.execute("SELECT count(july_day) FROM app_read.live_aircraft").fetchone()[0] == 0
+
+
+def test_live_status_reports_the_last_poll(conn, built):
+    loaded, snapshot = conn.execute("SELECT states_loaded_at, snapshot_at FROM app_read.live_status").fetchone()
+    assert loaded is not None
+    assert snapshot == datetime(2026, 11, 22, 17, 30, 5, tzinfo=timezone.utc)
+
+
+def test_live_status_has_one_row_before_any_poll(conn):
+    assert conn.execute("SELECT states_loaded_at, snapshot_at FROM app_read.live_status").fetchall() == [(None, None)]
