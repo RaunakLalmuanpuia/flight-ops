@@ -65,7 +65,10 @@ const pad = (h) => String(h).padStart(2, '0');
                             <span :title="utcTitle(atlEvent(f).sched)">{{ localTime(atlEvent(f).sched, ATL_TZ) }}</span>
                             <span v-if="atlEvent(f).actual" class="text-slate-500" :title="utcTitle(atlEvent(f).actual)"> → {{ localTime(atlEvent(f).actual, ATL_TZ) }}</span>
                         </td>
-                        <td class="px-2 py-1 whitespace-nowrap">{{ f.carrier }} {{ f.flight_number }}</td>
+                        <td class="px-2 py-1 whitespace-nowrap">
+                            <Link v-if="f.tail_number && f.arr_delay_min >= 15" :href="`/flights/${f.flight_id}`" class="text-sky-700 underline" title="What this late arrival puts at risk downstream">{{ f.carrier }} {{ f.flight_number }}</Link>
+                            <template v-else>{{ f.carrier }} {{ f.flight_number }}</template>
+                        </td>
                         <td class="px-2 py-1 whitespace-nowrap">
                             {{ f.direction === 'dep' ? `to ${f.other_station}` : `from ${f.other_station}` }}
                             <span v-if="f.status === 'diverted'" class="text-violet-700"> (landed {{ f.landed_station ?? '?' }})</span>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import { CANCELLATION, delayText } from '../lib/flights.js';
 import { axis, bar, dayBand, dayMarks, gapLabel, hoursMinutes, lateText } from '../lib/legs.js';
 import { ATL_TZ, localDate, localTime, shortDate, utcTitle } from '../lib/time.js';
@@ -40,7 +41,10 @@ const place = (b) => ({ left: `${b.left}%`, width: `${b.width}%` });
             <li class="grid grid-cols-1 gap-2 px-3 py-2 md:grid-cols-[22rem_1fr]" :class="[{ 'opacity-60': r.leg.leg_day !== day }, r.leg.cancelled && 'bg-slate-50 text-slate-500']">
                 <div class="space-y-1 text-sm">
                     <div class="font-medium">
-                        {{ localDate(r.leg.sched_dep_utc, r.leg.origin_tz) }} · {{ r.leg.carrier }} {{ r.leg.flight_number }} · {{ r.leg.origin }} → {{ r.leg.dest }}
+                        {{ localDate(r.leg.sched_dep_utc, r.leg.origin_tz) }} ·
+                        <Link v-if="!r.leg.cancelled" :href="`/flights/${r.leg.flight_id}`" class="text-sky-700 underline" title="What a delay here puts at risk downstream">{{ r.leg.carrier }} {{ r.leg.flight_number }}</Link>
+                        <template v-else>{{ r.leg.carrier }} {{ r.leg.flight_number }}</template>
+                        · {{ r.leg.origin }} → {{ r.leg.dest }}
                         <span v-if="r.leg.diverted" class="text-violet-700">(landed {{ r.leg.landed ?? '?' }})</span>
                     </div>
                     <div class="text-slate-600">
