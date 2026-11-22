@@ -189,7 +189,7 @@ ORDER BY f.sched_dep_utc, f.flight_id""",
 ]
 
 
-PERCENTILE = 25  # the min-turn percentile the backtest chose; must equal propagate's default
+PERCENTILE = 10  # the min-turn percentile the backtest chose; must equal propagate's default
 
 P3_HEADER = """# Phase 3 propagation backtest: July 2024
 
@@ -201,7 +201,21 @@ A late leg is a flown leg on a tail that touched ATL, arriving 15 min or more la
 # Written by hand from the tables below. Rewrite them if the data changes.
 P3_FINDINGS = """## Findings
 
-Written in Task 3 of docs/plans/2026-11-22-phase-3-backtest.md, from the tables below.
+- **p10 is the min turn to use.** On the normal period at depth 1, its `late_aircraft` error is 13.0 min, against 14.7 at p25 and 20.4 at p50, over 49,076 pairs. p10 is the shortest turn measured, so a shorter one might fit better still: even at p10 the model overpredicts depth-1 `late_aircraft` by 5.0 min on average (9.2 in the outage).
+- **The model beats both baselines everywhere it was scored.** For both targets, both periods and every depth from 1 to 3, its mean absolute error is below predict-0 and below full carry. At depth 1 on the normal period it is 13.0 min for `late_aircraft`, against 48.4 for predict-0 and 36.1 for full carry. Its lead over predict-0 shrinks with depth: by depth 3 it is 32.3 against 39.5 (normal) and 37.7 against 46.5 (outage), because most delays are absorbed by then and predicting 0 is nearly right.
+- **At risk is precise, and recall falls with depth.** At depth 1 on the normal period, 90.1% of legs flagged at risk had 15+ `late_aircraft` minutes, and 89.0% of those legs were flagged. Full carry flags every leg, so its precision is the base rate, 74.8%. By depth 3 the model's precision holds at 86.7%, but its recall drops to 30.5%: delay that returns later in the day comes from somewhere other than the original late arrival.
+- **The outage, held out, scores worse but still beats both baselines.** Depth-1 `late_aircraft` error is 18.4 min, against 57.9 for predict-0 and 60.0 for full carry. It is not fully out of sample, because `min_turn` was measured on all of July, outage included.
+- **Departure delay is undercounted, as expected.** The model predicts only aircraft-driven delay. On average it predicts 17.5 min less than the actual departure delay at depth 1 on the normal period, and 33.8 min less in the outage, where other causes added delay the aircraft didn't cause.
+- **Cancellations are the model's blind spot in the outage.** 9.8% of outage late legs (2,659 of 27,050) had a cancelled leg on their tail before the next flown leg, against 1.6% (1,470 of 90,768) in the normal period. The model shows those legs but predicts nothing for them, so in the outage it scores only the flying that survived.
+- **Hindsight in the chain is small.** The chain follows the order the aircraft actually flew, which a dispatcher wouldn't know in advance. 519 of 333,556 scored pairs at p10 (0.16%) are swaps, where the scored leg was scheduled before the late leg.
+- **N102DN shows both the blind spot and a correct zero.** Its DEN→ATL arrived 316 min late. The model gives the next flown leg, ATL→BWI, a 50-min turn and 221 min of slack, and calls the delay absorbed. Meanwhile the three legs scheduled in that gap (ATL→CLE, CLE→ATL, ATL→GEG) were cancelled. ATL→BWI left 49 min late with `late_aircraft` reported as 0, so the model was right not to blame the aircraft. Its next leg, BWI→ATL, left 308 min late, also with 0 `late_aircraft`: outage disruption the model doesn't try to predict.
+
+## Limits
+
+- **One month.** The percentile was chosen, and `min_turn` measured, on the same July, so the scores are in-sample. A second month would allow a true holdout.
+- **`late_aircraft` is scored only where BTS reports causes,** on legs that arrived 15+ min late. Legs that recovered below 15 have no cause data, and they are left out of that target rather than scored as 0.
+- **Aircraft only.** BTS has no crew or passenger connections, so delay that moves through a crew or a connecting passenger is invisible to the model.
+- **Pairs at or past a rotation break or the 24h limit are not scored,** so the scores describe chains the data can follow.
 """
 
 METRICS = """SELECT period, depth, count(*) AS pairs,

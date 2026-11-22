@@ -15,8 +15,9 @@ def built(conn, load_fixture):
     conn.execute("truncate ontology.min_turn")
     conn.execute(
         "insert into ontology.min_turn (carrier_id, samples, p10, p25, p50) "
-        "select carrier_id, 500, 30, 40, 60 from ontology.carrier where code = 'DL' "
-        "union all select null, 1000, 20, 45, 70"
+        # The default percentile (p10) holds 40 for DL and 45 for all carriers.
+        "select carrier_id, 500, 40, 30, 60 from ontology.carrier where code = 'DL' "
+        "union all select null, 1000, 45, 20, 70"
     )
     return conn
 

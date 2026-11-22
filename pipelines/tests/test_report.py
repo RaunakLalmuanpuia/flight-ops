@@ -76,8 +76,8 @@ def test_phase3_counts_cancelled_legs_in_the_gap_and_swaps(backtested):
 
 
 def test_phase3_scores_against_both_baselines(backtested):
-    # normal, depth 1, late_aircraft reported only on 102: model 40 vs 45, zero 45, carry 60.
-    assert "| normal | 1 | 1 | 5.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 |" in phase3(backtested)
+    # normal, depth 1, late_aircraft reported only on 102: model at p10 predicts 30 vs 45, zero 45, carry 60.
+    assert "| normal | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 |" in phase3(backtested)
 
 
 def test_report_percentile_is_propagates_default(conn):

@@ -9,7 +9,9 @@ Reasoning behind these choices is in `DECISIONS.md`. Out of scope: predicting ca
 ```
 flight-ops/
 ├── db/migrations/016_min_turn.sql      # ontology.min_turn table
-├── db/migrations/017_propagate.sql     # app_read.propagate(), app_read.propagation_backtest
+├── db/migrations/017_propagate.sql     # app_read.propagate()
+├── db/migrations/018_propagation_backtest.sql  # ontology.propagation_backtest, filled by the pipeline
+├── db/migrations/019_propagate_default.sql     # propagate defaults to p10, chosen by the backtest
 ├── pipelines/flightops/build.py        # fills ontology.min_turn after rotations
 ├── pipelines/flightops/report.py       # also writes docs/phase-3-report.md
 ├── pipelines/tests/                    # fixtures for min_turn, propagate, backtest
@@ -35,7 +37,7 @@ flight-ops/
 |---|---|---|
 | `ontology.min_turn` | carrier, plus one all-carrier row (`carrier_id` NULL) | `samples`, `p10`, `p25`, `p50` in minutes |
 | `app_read.propagate(flight_id, arr_delay_min, percentile)` | the selected flight, downstream legs, or cancelled-in-gap flights | `depth`, flight, kind (`selected`, `flown`, `cancelled`), scheduled departure, `min_turn`, `slack`, `predicted_dep_delay`, `at_risk`, the actual departure delay, the actual arrival delay (`actual_arr_delay`) and `late_aircraft` minutes, and `stop_reason` on the last row |
-| `app_read.propagation_backtest` | scored pair, at depth 1-3 and each percentile | late leg, scored leg, depth, percentile, window, predicted delay, actual departure delay, `late_aircraft` minutes (NULL when not reported), and both baselines |
+| `ontology.propagation_backtest` | scored pair, at depth 1-3 and each percentile | late leg, scored leg, depth, percentile, window, predicted delay, actual departure delay, `late_aircraft` minutes (NULL when not reported), and both baselines |
 
 `propagate` takes the selected flight's arrival delay as its starting point. Leaving it NULL uses the actual value. The percentile stays a parameter, because the backtest needs it. After step 3 the function's default is set to the chosen percentile and the app relies on the default. `propagation_backtest` starts from every flown leg on an ATL-touching tail that arrived 15 min or more late, and uses only that leg's actual arrival and the downstream schedule.
 
@@ -64,7 +66,7 @@ flight-ops/
 
 1. `ontology.min_turn`: migration, build step, fixture tests, and the measured values.
 2. `app_read.propagate`: migration and fixture tests for absorbed, carried across two legs, break, the 24h limit, cancelled in gap, a what-if override and the all-carrier fallback.
-3. `app_read.propagation_backtest`, the percentile choice, and `docs/phase-3-report.md` with the N102DN section.
+3. `ontology.propagation_backtest`, the percentile choice, and `docs/phase-3-report.md` with the N102DN section.
 4. FlightImpact page, links from TailDay and HubDay, Pest tests and a screenshot.
 
 ## Done means
@@ -99,3 +101,4 @@ Measured values go here as steps finish.
   No carrier falls below 200 samples (smallest is YX at 311), so the all-carrier fallback is not used in July.
 
 - Checked `app_read.propagate(371994)` (N102DN, July 19) on the real July database. Selected DEN->ATL (316 min late), three cancelled rows at depth 1 (ATL->CLE, CLE->ATL, ATL->GEG), then flown ATL->BWI at depth 1: min turn 58 (DL p25), slack 213, predicted delay 0, `absorbed`. Its actual departure delay was 49, arrival delay 28, and `late_aircraft` was a reported 0. `explain analyze` execution time: 3.1 ms for that one call. Over 2,000 real late legs it measured 0.25-0.45 ms per call.
+- Backtest built for July (step 3), in `ontology` rather than `app_read`, because the app doesn't read it. 117,818 late legs, 113,643 of them with at least one scored pair. At p10, 333,556 scored pairs (256,806 normal, 76,750 outage), 519 of them swaps. The step takes 111 s of a 2:55 build. p10 was chosen (depth-1 normal `late_aircraft` MAE 13.0, against 14.7 at p25 and 20.4 at p50), and migration 019 makes it `propagate`'s default. The model beats predict-0 and full carry on MAE at every depth, in both periods and for both targets. Results are in `docs/phase-3-report.md`.

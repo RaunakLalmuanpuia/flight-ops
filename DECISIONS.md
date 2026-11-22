@@ -199,3 +199,15 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a model of what the delay did to the schedule. For N102DN on July 19, the 316-min DEN→ATL is predicted as absorbed by the 02:50Z ATL→BWI, while the three legs scheduled in between were cancelled.
 - **Why:** flown legs have actual times to score against, and BTS gives no signal for predicting cancellations outside the outage. Showing the cancelled legs keeps what the model misses in plain view.
 - **Revisit if:** the backtest shows cancellations in the gap after most large delays. Then a cancellation model is worth its own phase.
+
+## 2026-11-22: Score the backtest from the flown chain, built inside the pipeline
+- **Chose:** `ontology.propagation_backtest`, filled by `pipeline.build` after `min_turn`. Pairs come from `rotation_leg` at depths 1-3, so a leg after an absorbed stop scores as predicted 0. Pairs at or past a break or the 24h limit are excluded. It lives in `ontology`, not `app_read` as first planned, because the app doesn't read it and `app_read`'s default grants would expose it.
+- **Gave up:** 111 s on every build (353k `propagate` calls), and a backtest that can be rerun without a full build.
+- **Why:** scoring only the rows `propagate` returns would drop every leg it called absorbed, which are its false negatives. A view would rerun all those calls on every read, and a separate command could go stale against `min_turn`.
+- **Revisit if:** builds get run often enough that 2 minutes matters. Then move it to its own command, and have the report check it is newer than `min_turn`.
+
+## 2026-11-22: Use p10 min turn for propagation
+- **Chose:** p10 as `app_read.propagate`'s default percentile (migration 019). Depth-1 `late_aircraft` error on July outside the outage was 13.0 min, against 14.7 at p25 and 20.4 at p50.
+- **Gave up:** a more cautious turn. p10 flags fewer legs at risk: depth-1 recall falls from 95.0% at p25 to 89.0%, while precision rises from 88.5% to 90.1%.
+- **Why:** the backtest scores the error in minutes, which is what the page shows. p10 is the edge of the grid and still overpredicts depth 1 by 5 min on average, so the best turn may be shorter.
+- **Revisit if:** a second month is loaded. Then choose on one month and score on the other, and try percentiles below p10.
