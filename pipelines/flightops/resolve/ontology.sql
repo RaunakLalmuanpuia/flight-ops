@@ -1,4 +1,4 @@
-TRUNCATE ontology.min_turn, ontology.flight_weather, ontology.rotation_leg, ontology.delay, ontology.taf_forecast, ontology.weather_observation, ontology.flight,
+TRUNCATE ontology.propagation_backtest, ontology.min_turn, ontology.flight_weather, ontology.rotation_leg, ontology.delay, ontology.taf_forecast, ontology.weather_observation, ontology.flight,
          ontology.aircraft_registration, ontology.aircraft, ontology.carrier, ontology.airport,
          dq.unresolved_link
 RESTART IDENTITY;
