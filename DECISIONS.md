@@ -211,3 +211,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a more cautious turn. p10 flags fewer legs at risk: depth-1 recall falls from 95.0% at p25 to 89.0%, while precision rises from 88.5% to 90.1%.
 - **Why:** the backtest scores the error in minutes, which is what the page shows. p10 is the edge of the grid and still overpredicts depth 1 by 5 min on average, so the best turn may be shorter.
 - **Revisit if:** a second month is loaded. Then choose on one month and score on the other, and try percentiles below p10.
+
+## 2026-11-22: Start a diverted flight's chain from its landing, with no what-if
+- **Chose:** the FlightImpact page propagates a diverted flight from its actual landing time, says that BTS gives no arrival delay for a diversion, and shows no delay form. A `?delay=` on a diverted flight fails validation.
+- **Gave up:** what-if delays for diversions. All 1,414 diverted legs on ATL tails have no arrival delay, and 1,378 have a next leg.
+- **Why:** propagate's override measures from the scheduled arrival at the scheduled destination, which is the wrong airport when the aircraft landed elsewhere. A form that silently did that would show a confident, wrong chain.
+- **Revisit if:** propagate gains an override measured from the actual landing, or diversions become a case operators ask about.

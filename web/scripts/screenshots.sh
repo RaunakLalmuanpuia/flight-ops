@@ -18,3 +18,5 @@ shot hub-2024-07-19 /day/2024-07-19 1440,1300
 shot hub-2024-07-10 /day/2024-07-10 1440,1300
 shot tail-N102DN-2024-07-19 /tail/N102DN/2024-07-19 1440,1100
 shot tail-N181PQ-2024-07-19 /tail/N181PQ/2024-07-19 1440,1100
+# shortcut: N102DN's DEN->ATL by flight_id, which held across July rebuilds so far; look it up if a rebuild renumbers flights
+shot flight-N102DN-2024-07-19 /flights/371994 1440,900
