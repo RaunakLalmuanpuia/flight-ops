@@ -8,7 +8,8 @@ Reasoning behind these choices is in `DECISIONS.md`. Out of scope: a data-qualit
 
 ```
 flight-ops/
-├── db/migrations/011_app_read.sql   # views, is_adverse(), flightops_app role grants
+├── db/migrations/011_is_adverse.sql # ontology.is_adverse(), shared with the report
+├── db/migrations/012_app_read.sql   # views, break_label(), flightops_app role grants
 ├── pipelines/tests/                 # view tests with fixtures
 └── web/                             # Laravel + Inertia + Vue + Tailwind
     ├── app/Http/Controllers/        # HubDayController, TailDayController
@@ -21,8 +22,8 @@ flight-ops/
 ## Definitions
 
 - **ATL day:** the ATL local date (`America/New_York`) of a flight's scheduled ATL event. That's the departure for flights leaving ATL and the arrival for flights landing there, so cancelled flights have a day too. On the tail page, a leg belongs to the ATL local date of its scheduled departure, wherever it departs from.
-- **Adverse weather:** thunderstorm, heavy rain, fog, snow or freezing precipitation, ceiling under 1,000 ft, visibility under 3 SM, or gust of 30 kt or more. It is defined once, in `app_read.is_adverse`, and used by both the app and `report.py`.
-- **Stale METAR:** more than 90 minutes old at the flight's ATL event. METARs come roughly hourly, so one hour old is normal.
+- **Adverse weather:** thunderstorm, heavy rain, fog, snow or freezing precipitation, ceiling under 1,000 ft, visibility under 3 SM, or gust of 30 kt or more. It is defined once, in `ontology.is_adverse`, and used by both the app and `report.py`.
+- **Stale METAR:** more than 90 minutes old at the flight's ATL event, or missing entirely. The METAR is taken at the actual event when there was one, otherwise the scheduled one. METARs come roughly hourly, so one hour old is normal.
 - **Time display:** ATL local time on the hub page, each station's local time on the tail page, and UTC on hover in both places. Views return UTC, and Vue formats it with `Intl.DateTimeFormat`.
 
 ## Data layer: `app_read`
@@ -31,13 +32,15 @@ This schema holds views and one function, and no data. Pipelines own it through 
 
 | Object | One row per | Contents |
 |---|---|---|
-| `is_adverse(weather_observation)` | — | The adverse rule above |
+| `break_label(text)` | — | Readable text for each rotation `break_cause` |
+| `day_range` | one row | First and last BTS `flight_date`: the days the app offers |
 | `atl_flight` | flight touching ATL | `atl_day`, `direction` (`dep` or `arr`), and the flight's columns |
-| `hub_day_hourly` | day × local hour × direction | Scheduled, operated, cancelled and delayed-15+ counts, and delay minutes by cause |
+| `hub_day_hourly` | day × local hour × direction | Scheduled and operated counts, plus counts for each status: on time, delayed 15+, diverted and cancelled |
 | `hub_day_weather` | ATL METAR | `atl_day`, local hour, `adverse`, wind, gust, visibility, ceiling, weather and raw text |
-| `hub_day_flights` | flight touching ATL | Times, carrier, other station, tail, status, delays, and the caveat flags `metar_stale`, `block_mismatch`, `aircraft_unresolved` and `aircraft_medium_confidence` |
-| `hub_day_caveats` | day | Counts of each caveat flag, plus rotation breaks touching the day |
-| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), the ATL local day of scheduled departure, gap minutes, a readable label for `break_cause`, delays and the ATL METAR |
+| `hub_day_flights` | flight touching ATL | Times, carrier, other station, tail, status, delays, METAR, and the caveat flags `metar_stale`, `block_mismatch`, `aircraft_unresolved`, `aircraft_medium_confidence` and `rotation_break` |
+| `hub_day_caveats` | day | Counts of each caveat flag |
+| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), the ATL local day of scheduled departure, gap minutes, break label, previous station, delays and the ATL METAR |
+| `tail_aircraft` | tail × linked aircraft | Manufacturer, model, link method and confidence, or the unresolved reason |
 
 Day boundaries, the adverse rule and break labels live only in SQL. PHP filters by `atl_day`, `tail_number` and `leg_seq`, and nothing more.
 
@@ -66,7 +69,7 @@ Charts are hand-written SVG. There is no chart or date library.
 
 ## Steps
 
-1. **Views:** write `011_app_read.sql` with the role and grants, and pytest fixtures covering an inbound flight that crosses ATL midnight, a cancelled flight, a diversion, a stale METAR and each break cause.
+1. **Views:** write `012_app_read.sql` with the role and grants, and pytest fixtures covering an inbound flight that crosses ATL midnight, a cancelled flight, a diversion, a stale METAR and each break cause.
 2. **Report reuse:** `report.py` uses `is_adverse`, and the regenerated report must be identical to the current one.
 3. **App skeleton:** create `web/` from the Vue starter kit, remove auth, connect as `flightops_app`, add the routes and 404s, and write Pest tests.
 4. **HubDay:** build the timeline, caveat panel and flight table.
