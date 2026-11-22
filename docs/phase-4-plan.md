@@ -8,8 +8,10 @@ Reasoning behind these choices is in `DECISIONS.md`. Out of scope: a live schedu
 
 ```
 flight-ops/
-├── db/migrations/020_live.sql              # raw live tables, staging.v_faa_current, staging.callsign_prefix, ontology.live_*, app_read.live_*
-├── pipelines/flightops/sources/live.py     # fetch states and METAR/TAF, write files, the loop
+├── db/migrations/020_live.sql              # raw live tables, staging.v_faa_current, staging.callsign_prefix, ontology.live_*
+├── db/migrations/021_live_read.sql         # app_read.live_* (step 3)
+├── pipelines/flightops/sources/live.py     # fetch states and METAR/TAF, write files
+├── pipelines/flightops/live.py             # the loop
 ├── pipelines/flightops/transform/live.py   # rebuild ontology.live_* from the latest raw rows
 ├── pipelines/tests/fixtures/live/          # OpenSky states and aviationweather responses
 └── web/
@@ -39,7 +41,7 @@ flight-ops/
 | `raw.opensky_state`, `raw.awc_metar`, `raw.awc_taf` | delivered row | all text, plus `source_file`, `source_sha256`, `loaded_at`, and the fetch time |
 | `staging.v_faa_current` | current MASTER registration | tail with `N`, hex uppercase, `mfr_mdl_code`, manufacturer and model from ACFTREF |
 | `staging.callsign_prefix` | ICAO callsign prefix | prefix (`DAL`, `EDV`, `SKW`, ...), operator name, the BTS carrier code where one exists, and the source of the row |
-| `ontology.live_position` | aircraft in the latest snapshot | hex, callsign, position and its age, altitude, vertical rate, on ground, distance (nm) and bearing from ATL, tail, type, operator, `aircraft_id` when the airframe is in the July ontology, `resolve_method`, `unresolved_reason` |
+| `ontology.live_position` | aircraft in the latest snapshot | hex, callsign, position and its age, altitude, vertical rate, on ground, distance (nm) and bearing from ATL, tail, type, operator, `resolve_method`, `resolve_confidence`, `unresolved_reason`, `operator_reason`. No `aircraft_id`: the July rebuild restarts identities, so `app_read` joins it by hex |
 | `ontology.live_weather` | METAR at KATL | the columns of `weather_observation`, parsed with the existing `parse_metar` |
 | `ontology.live_taf` | latest TAF at KATL | issue time and raw text |
 | `app_read.live_aircraft`, `app_read.live_weather` | as above | what the page reads, including `snapshot_at`, the adverse flag via `is_adverse`, and the 90-minute stale flag |
@@ -47,9 +49,9 @@ flight-ops/
 **Resolution**, following the CLAUDE.md rules:
 
 - **Hex:** uppercase, then match against `staging.v_faa_current`. That is today's registry, which is correct for a live flight. `staging.faa_record` can't be used, because it holds only July BTS tails.
-- **Unresolved, with a reason:** `hex not in FAA registry` (foreign or military), `no position`, and `ambiguous hex` if the snapshot holds more than one registration for a hex. None are dropped.
-- **Operator:** the first 3 characters of the trimmed callsign, matched against `staging.callsign_prefix`. A callsign that is a tail number (general aviation) gets an operator of `none`. Any other unmatched prefix keeps its raw prefix and the reason `unknown prefix`.
-- **Distance and bearing:** haversine from the ATL coordinates in `ontology.airport`, in plain SQL.
+- **Unresolved, with a reason:** `hex not in FAA registry` (foreign or military) and `ambiguous hex`. A row with no position is kept with a NULL distance if the snapshot holds more than one registration for a hex. None are dropped.
+- **Operator:** the first 3 characters of the trimmed callsign, matched against `staging.callsign_prefix`. A callsign that is a tail number (general aviation) gets an operator of none and the reason `general aviation callsign`, a blank callsign gets `no callsign`, and any other unmatched prefix gets `unknown prefix`.
+- **Distance and bearing:** haversine in plain SQL, from ATL's OurAirports coordinates held as a constant in `sources/live.py` (the bounding box needs them before any database read). Phase 6 replaces it.
 
 ## App
 
