@@ -5,7 +5,7 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 ## Status
 
 - **Current phase:** 4 (live data), steps 1-2 done and merged to `main`: migration 020, `python -m flightops live` polling OpenSky states and aviationweather METAR/TAF into `ontology.live_position`, `live_weather` and `live_taf`. Measured rates are in the notes of `docs/phase-4-plan.md`.
-- **Next action:** plan step 3 (the `/live` page, migration 021 with `app_read.live_*`) with `superpowers:writing-plans`, then stop for review.
+- **Next action:** the step 3 plan (the `/live` page) is `docs/plans/2026-11-22-phase-4-live-page.md`. Once the user approves it, build it task by task on a branch.
 - **Built so far:** phases 1, 2 and 3 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the read-only ops console in `web/` (HubDay, TailDay and FlightImpact pages). The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect,live}`. `live` polls every 60 s (`--every`) until Ctrl-C. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
 - **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phase 2, phase 3 and phase 4 steps 1-2.
