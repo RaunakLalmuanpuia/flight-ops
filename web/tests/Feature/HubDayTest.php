@@ -21,7 +21,7 @@ it('shows every ATL flight of the ATL local day', function () {
         ->where('caveats.no_tail', 25));
 });
 
-it('counts cancellations by ATL day, matching the direct query', function () {
+it('counts 899 cancellations on July 19 by ATL day, as measured in app_read', function () {
     $this->get('/day/2024-07-19')->assertInertia(fn (Assert $page) => $page
         ->where('hourly', fn (Collection $rows) => $rows->sum('cancelled') === 899));
 });
@@ -32,6 +32,6 @@ it('names the loaded range for a day outside it', function (string $day) {
         ->where('range.first_day', '2024-07-01'));
 })->with(['2024-08-01', '2024-06-30', '2024-07-32', '2024-02-30']);
 
-it('rejects a malformed date', function () {
-    $this->get('/day/july-19')->assertNotFound();
+it('rejects a malformed date with the range page', function () {
+    $this->get('/day/july-19')->assertNotFound()->assertInertia(fn (Assert $page) => $page->component('NotFound'));
 });

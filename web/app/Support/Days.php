@@ -11,7 +11,7 @@ class Days
     /** @return array{first_day: string, last_day: string} */
     public static function range(): array
     {
-        // day_range scans every flight, so read it once per request
+        // day_range scans every flight; the range is fixed for a loaded database, so memoize it for the process
         return once(fn () => (array) DB::selectOne('select first_day, last_day from day_range'));
     }
 
