@@ -53,9 +53,11 @@ export function dayBand(day, { start, end }, timeZone) {
     return { left: ((from - start) / length) * 100, width: ((to - from) / length) * 100 };
 }
 
+const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
+
 export function lateText(leg) {
     const dep = leg.dep_delay_min;
     const arr = leg.arr_delay_min;
     if (!(dep >= 15 || arr >= 15)) return null;
-    return [dep != null && `dep +${dep} min`, arr != null && `arr +${arr} min`].filter(Boolean).join(' · ');
+    return [dep != null && `dep ${signed(dep)} min`, arr != null && `arr ${signed(arr)} min`].filter(Boolean).join(' · ');
 }

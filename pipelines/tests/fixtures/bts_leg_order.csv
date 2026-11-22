@@ -1,3 +1,4 @@
 flightdate,reporting_airline,tail_number,flight_number_reporting_airline,origin,dest,crsdeptime,deptime,depdelay,crsarrtime,arrtime,arrdelay,crselapsedtime,actualelapsedtime,cancelled,cancellationcode,diverted,divreacheddest,div1airport,div1wheelson,carrierdelay,weatherdelay,nasdelay,securitydelay,lateaircraftdelay
 2024-07-19,DL,N7A,30,ORD,ATL,0800,1400,360.00,1055,1655,360.00,115.00,115.00,0.00,,0.00,,,,360.00,0.00,0.00,0.00,0.00
 2024-07-19,DL,N7A,31,ATL,LGA,1430,,,1645,,,135.00,,1.00,A,0.00,,,,,,,,
+2024-07-19,DL,N8A,32,LAX,ATL,2035,2035,0.00,0405,0405,0.00,270.00,270.00,0.00,,0.00,,,,,,,,

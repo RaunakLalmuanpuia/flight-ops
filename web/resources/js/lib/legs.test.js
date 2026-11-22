@@ -56,6 +56,7 @@ test('late text names the delayed parts, and is null on time', () => {
     assert.equal(lateText({ dep_delay_min: 31, arr_delay_min: 9 }), 'dep +31 min · arr +9 min');
     assert.equal(lateText({ dep_delay_min: 316, arr_delay_min: 316 }), 'dep +316 min · arr +316 min');
     assert.equal(lateText({ dep_delay_min: null, arr_delay_min: 20 }), 'arr +20 min');
+    assert.equal(lateText({ dep_delay_min: -5, arr_delay_min: 29 }), 'dep -5 min · arr +29 min');
     assert.equal(lateText({ dep_delay_min: 5, arr_delay_min: 14 }), null);
     assert.equal(lateText({ dep_delay_min: null, arr_delay_min: null }), null);
 });

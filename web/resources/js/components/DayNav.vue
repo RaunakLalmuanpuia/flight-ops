@@ -7,6 +7,7 @@ const props = defineProps({ day: String, range: Object, base: String });
 function go(event) {
     const v = event.target.value;
     if (v && v !== props.day && v >= props.range.first_day && v <= props.range.last_day) router.visit(`${props.base}/${v}`);
+    else event.target.value = props.day;
 }
 </script>
 

@@ -178,6 +178,12 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 
 ## 2026-11-22: Order a tail's legs by scheduled departure
 - **Chose:** `tail_legs.leg_order` sorts every leg, flown or cancelled, by scheduled departure.
-- **Gave up:** actual-time order for flown legs, which differs when an aircraft's legs swap or a delay pushes one leg past the next one's schedule. Measured on July 2024: 3,443 of 377,530 flown legs (0.9%) are shown after a different leg than the one they followed, and 77 of 4,340 gap rows sit beside a leg other than the one they compare against, because `connects` and the break label still come from the actual-time rotation.
+- **Gave up:** actual-time order for flown legs, which differs when an aircraft's legs swap or a delay pushes one leg past the next one's schedule. Measured on July 2024, counting the cancelled legs the page shows between rows: 9,534 flown legs sit under a different row than the leg they followed, and 712 of 4,340 gap rows sit beside a different leg than the one they compare against (643 directly under a cancelled leg). Leaving cancelled legs out, the figures are 3,443 of 377,530 and 77 of 4,340. `connects` and the break label still come from the actual-time rotation.
 - **Why:** a cancelled leg has no actual time. Mixing its scheduled time with other legs' actual times put N102DN's cancelled ATL→CLE before the late DEN→ATL that should have fed it, so the aircraft appeared to leave Atlanta before arriving.
 - **Revisit if:** phase 3's delay propagation needs the flown order. `leg_seq` still holds it.
+
+## 2026-11-22: Link hub rows to the tail page's day for that leg
+- **Chose:** each hub row links to the tail page for its leg's ATL date of scheduled departure (`tail_day`), not the hub day.
+- **Gave up:** staying on the same date when drilling down. An overnight inbound flight on the July 20 hub opens its tail on July 19.
+- **Why:** the hub files flights by their ATL event and the tail page by departure. Linking by hub day opened 438 July pages with the clicked flight outside the day, and 12 that showed no legs at all.
+- **Revisit if:** the walkthrough shows the date change confuses more than the mismatch did. Then widen the tail page's day to include arrivals at ATL.

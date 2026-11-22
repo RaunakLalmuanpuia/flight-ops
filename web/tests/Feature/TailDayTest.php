@@ -35,3 +35,9 @@ it('returns not found for a tail that never touched ATL', function () {
 it('returns not found for a day outside the range', function () {
     $this->get('/tail/N103DY/2024-08-01')->assertNotFound();
 });
+
+it('opens the tail day that holds the flight clicked on the hub', function () {
+    $row = DB::selectOne("select tail_number, tail_day, flight_id from hub_day_flights where atl_day = '2024-07-10' and tail_day <> atl_day and tail_number is not null order by flight_id limit 1");
+    $this->get("/tail/{$row->tail_number}/{$row->tail_day}")->assertInertia(fn (Assert $page) => $page
+        ->where('legs', fn (Collection $legs) => $legs->pluck('flight_id')->contains($row->flight_id)));
+});

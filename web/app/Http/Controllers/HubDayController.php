@@ -23,7 +23,7 @@ class HubDayController
             'weather' => DB::select(
                 'select atl_hour, observed_at, adverse, raw_text from hub_day_weather where atl_day = ? order by observed_at', [$date]),
             'caveats' => DB::selectOne(
-                'select metar_stale, rotation_break, aircraft_unresolved, aircraft_medium_confidence, block_mismatch, no_tail
+                'select metar_stale, rotation_break, aircraft_unresolved, aircraft_medium_confidence, block_mismatch, no_tail, tail_day
                  from hub_day_caveats where atl_day = ?', [$date]),
             'flights' => DB::select(
                 'select flight_id, atl_hour, direction, status, carrier, flight_number, other_station, landed_station, tail_number,

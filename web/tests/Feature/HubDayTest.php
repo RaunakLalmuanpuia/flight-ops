@@ -35,3 +35,8 @@ it('names the loaded range for a day outside it', function (string $day) {
 it('rejects a malformed date with the range page', function () {
     $this->get('/day/july-19')->assertNotFound()->assertInertia(fn (Assert $page) => $page->component('NotFound'));
 });
+
+it('gives every tailed flight a tail_day', function () {
+    $this->get('/day/2024-07-10')->assertInertia(fn (Assert $page) => $page
+        ->where('flights', fn (Collection $flights) => $flights->whereNotNull('tail_number')->every(fn ($f) => ! empty($f['tail_day']))));
+});

@@ -71,13 +71,13 @@ const pad = (h) => String(h).padStart(2, '0');
                             <span v-if="f.status === 'diverted'" class="text-violet-700"> (landed {{ f.landed_station ?? '?' }})</span>
                         </td>
                         <td class="px-2 py-1">
-                            <Link v-if="f.tail_number" :href="`/tail/${f.tail_number}/${day}`" class="text-sky-700 underline">{{ f.tail_number }}</Link>
+                            <Link v-if="f.tail_number" :href="`/tail/${f.tail_number}/${f.tail_day}`" class="text-sky-700 underline">{{ f.tail_number }}</Link>
                             <span v-else class="text-slate-400">—</span>
                         </td>
                         <td class="px-2 py-1"><span class="badge" :class="BADGE[f.status]" :title="f.cancellation_code ? `BTS cancellation code ${f.cancellation_code}` : null">{{ STATUS[f.status] }}<template v-if="f.cancellation_code"> · {{ CANCELLATION[f.cancellation_code] ?? f.cancellation_code }}</template></span></td>
                         <td class="px-2 py-1">
                             <span v-if="atlEvent(f).delay !== null">{{ atlEvent(f).delay }} min</span>
-                            <div v-if="delayText(f.delays)" class="text-xs text-slate-500">{{ delayText(f.delays) }}</div>
+                            <div v-if="delayText(f.delays)" class="text-xs text-slate-500"><template v-if="f.direction === 'dep'">arrival delay causes: </template>{{ delayText(f.delays) }}</div>
                         </td>
                         <td class="px-2 py-1">
                             <span v-if="f.metar_staleness_min !== null">{{ f.metar_staleness_min }} min</span><span v-else class="text-slate-400">none</span>

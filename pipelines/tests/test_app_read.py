@@ -245,3 +245,16 @@ def test_leg_order_follows_schedule_so_a_cancelled_leg_never_jumps_ahead(conn, l
     assert conn.execute(
         "select flight_number, leg_order from app_read.tail_legs where tail_number = 'N7A' order by leg_order"
     ).fetchall() == [("30", 1), ("31", 2)]
+
+
+def test_overnight_inbound_links_to_the_tail_day_of_its_departure(conn, load_fixture):
+    load_fixture("ourairports_airports", "airports.csv")
+    load_fixture("bts_ontime", "bts_leg_order.csv")
+    load_fixture("iem_metar", "metar_join.csv")
+    pipeline.build(conn)
+    assert conn.execute(
+        "select atl_day, tail_day from app_read.hub_day_flights where flight_number = '32'"
+    ).fetchall() == [(date(2024, 7, 20), date(2024, 7, 19))]
+    assert conn.execute(
+        "select leg_day from app_read.tail_legs where flight_number = '32'"
+    ).fetchall() == [(date(2024, 7, 19),)]
