@@ -217,3 +217,21 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** what-if delays for diversions. All 1,414 diverted legs on ATL tails have no arrival delay, and 1,378 have a next leg.
 - **Why:** propagate's override measures from the scheduled arrival at the scheduled destination, which is the wrong airport when the aircraft landed elsewhere. A form that silently did that would show a confident, wrong chain.
 - **Revisit if:** propagate gains an override measured from the actual landing, or diversions become a case operators ask about.
+
+## 2026-11-22: Keep live data in its own tables
+- **Chose:** live METARs, TAFs and positions go into `ontology.live_*`, rebuilt from the latest raw rows on each poll, beside the July tables rather than in them.
+- **Gave up:** one weather table for the app and report to read, so a query that wants both live and historical METARs has to union them.
+- **Why:** `build_weather` truncates and rebuilds weather from IEM, which would wipe live rows, and live rows would otherwise change the report's counts.
+- **Revisit if:** live collection runs long enough to become history worth reporting on, at which point live METARs should flow through staging like IEM.
+
+## 2026-11-22: Map callsigns to operators with a hand-made prefix table
+- **Chose:** `staging.callsign_prefix`, a short seed of ICAO prefixes (`DAL`, `EDV`, `SKW` and others seen at ATL), each with its source. Unmatched prefixes are kept and labelled.
+- **Gave up:** completeness. Rare operators show as `unknown prefix`.
+- **Why:** BTS gives no ICAO codes, and the prefixes that matter at ATL are few and stable.
+- **Revisit if:** the unknown share in a real run is large, or a licensed source of ICAO designators becomes available.
+
+## 2026-11-22: Run the live loop by hand, with no live schedule
+- **Chose:** `python -m flightops live` polls every 60 s while left running in a terminal. The page shows positions and weather only, with no flight numbers or delays.
+- **Gave up:** a page that is live without anyone acting, and any link from a live aircraft to a scheduled flight.
+- **Why:** the user doesn't want a background job on this Mac, pipelines stay the only writers, and BTS has no schedule for today. A full day costs 1,440 of the 4,000 daily state-vector credits.
+- **Revisit if:** a schedule source is added, or the app is containerized in phase 7 and a scheduler comes for free.
