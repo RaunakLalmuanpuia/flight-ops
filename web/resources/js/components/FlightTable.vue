@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { atlEvent, CAVEATS, caveatsOf, delayText, filterFlights } from '../lib/flights.js';
+import { atlEvent, byAtlTime, CANCELLATION, CAVEATS, caveatsOf, delayText, filterFlights } from '../lib/flights.js';
 import { ATL_TZ, localTime, utcTitle } from '../lib/time.js';
 
 const props = defineProps({ flights: Array, day: String, filters: Object });
@@ -11,7 +11,8 @@ const STATUS = { on_time: 'On time', delayed: 'Delayed 15+', diverted: 'Diverted
 const BADGE = { on_time: 'bg-slate-100 text-slate-700', delayed: 'bg-amber-100 text-amber-900', diverted: 'bg-violet-100 text-violet-900', cancelled: 'bg-red-100 text-red-800' };
 
 const carriers = computed(() => [...new Set(props.flights.map((f) => f.carrier))].sort());
-const shown = computed(() => filterFlights(props.flights, props.filters));
+const ordered = computed(() => byAtlTime(props.flights));
+const shown = computed(() => filterFlights(ordered.value, props.filters));
 const set = (key, value) => emit('update:filters', { ...props.filters, [key]: value });
 const clear = () => emit('update:filters', { direction: '', carrier: '', status: '', hour: null, caveat: '' });
 const pad = (h) => String(h).padStart(2, '0');
@@ -73,7 +74,7 @@ const pad = (h) => String(h).padStart(2, '0');
                             <Link v-if="f.tail_number" :href="`/tail/${f.tail_number}/${day}`" class="text-sky-700 underline">{{ f.tail_number }}</Link>
                             <span v-else class="text-slate-400">—</span>
                         </td>
-                        <td class="px-2 py-1"><span class="badge" :class="BADGE[f.status]">{{ STATUS[f.status] }}<template v-if="f.cancellation_code"> · {{ f.cancellation_code }}</template></span></td>
+                        <td class="px-2 py-1"><span class="badge" :class="BADGE[f.status]" :title="f.cancellation_code ? `BTS cancellation code ${f.cancellation_code}` : null">{{ STATUS[f.status] }}<template v-if="f.cancellation_code"> · {{ CANCELLATION[f.cancellation_code] ?? f.cancellation_code }}</template></span></td>
                         <td class="px-2 py-1">
                             <span v-if="atlEvent(f).delay !== null">{{ atlEvent(f).delay }} min</span>
                             <div v-if="delayText(f.delays)" class="text-xs text-slate-500">{{ delayText(f.delays) }}</div>

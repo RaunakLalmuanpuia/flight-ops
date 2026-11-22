@@ -1,3 +1,5 @@
+import { toDate } from './time.js';
+
 export const CAVEATS = {
     metar_stale: 'No METAR within 90 min',
     rotation_break: 'Rotation break',
@@ -37,4 +39,12 @@ export function delayText(delays) {
     return Object.entries(JSON.parse(delays))
         .map(([cause, minutes]) => `${CAUSES[cause] ?? cause} ${minutes}`)
         .join(', ');
+}
+
+export const CANCELLATION = { A: 'carrier', B: 'weather', C: 'NAS', D: 'security' };
+
+// Scheduled ATL time order; flight_id breaks ties so the order is stable.
+export function byAtlTime(flights) {
+    const t = (f) => toDate(atlEvent(f).sched).getTime();
+    return [...flights].sort((a, b) => t(a) - t(b) || a.flight_id - b.flight_id);
 }

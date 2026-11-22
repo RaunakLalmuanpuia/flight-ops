@@ -26,7 +26,7 @@ const LEGEND = [
         <section aria-label="Timeline" class="rounded border border-slate-200 bg-white p-3">
             <DayTimeline :hourly="hourly" :weather="weather" :selected-hour="filters.hour" @select-hour="(h) => (filters = { ...filters, hour: h })" />
             <ul class="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
-                <li v-for="[color, label] in LEGEND" :key="label" class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm" :class="color" />{{ label }}</li>
+                <li v-for="[color, label] in LEGEND" :key="label" class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm ring-1 ring-slate-300" :class="color" />{{ label }}</li>
             </ul>
         </section>
 

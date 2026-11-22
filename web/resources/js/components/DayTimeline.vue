@@ -22,7 +22,7 @@ const pad = (h) => String(h).padStart(2, '0');
     <svg :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" class="w-full" role="img" aria-label="ATL departures and arrivals by local hour, with METARs below">
         <g v-for="h in hours" :key="h.hour" :transform="`translate(${h.hour * COL},0)`" class="cursor-pointer" @click="emit('select-hour', selectedHour === h.hour ? null : h.hour)">
             <title>{{ pad(h.hour) }}:00 local · {{ total(h.dep) }} departures · {{ total(h.arr) }} arrivals</title>
-            <rect :width="COL" :height="HALF * 2" :class="selectedHour === h.hour ? 'fill-sky-100' : 'fill-transparent'" />
+            <rect :width="COL" :height="HALF * 2" :class="selectedHour === h.hour ? 'fill-slate-100 stroke-slate-400' : 'fill-transparent'" />
             <rect v-for="s in stack(h.dep, scale)" :key="`d${s.status}`" x="4" :width="COL - 8" :y="HALF - s.offset - s.length" :height="s.length" :class="FILL[s.status]" />
             <rect v-for="s in stack(h.arr, scale)" :key="`a${s.status}`" x="4" :width="COL - 8" :y="HALF + s.offset" :height="s.length" :class="FILL[s.status]" />
         </g>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { atlEvent, caveatsOf, delayText, filterFlights } from './flights.js';
+import { atlEvent, byAtlTime, CANCELLATION, caveatsOf, delayText, filterFlights } from './flights.js';
 
 const dep = { direction: 'dep', carrier: 'DL', status: 'delayed', atl_hour: 0, sched_dep_utc: 'S', actual_dep_utc: 'A', dep_delay_min: 30, metar_stale: true };
 const arr = { direction: 'arr', carrier: '9E', status: 'on_time', atl_hour: 8, sched_arr_utc: 's', actual_arr_utc: 'a', arr_delay_min: -3, metar_stale: false };
@@ -25,4 +25,16 @@ test('lists the caveats a flight carries', () => {
 test('reads delay causes from the jsonb text', () => {
     assert.equal(delayText('{"carrier": 10, "late_aircraft": 20}'), 'carrier 10, late aircraft 20');
     assert.equal(delayText(null), '');
+});
+
+test('orders by scheduled ATL time, flight_id breaking ties', () => {
+    const d1 = { flight_id: 1, direction: 'dep', sched_dep_utc: '2024-07-19T12:00:00Z' };
+    const a = { flight_id: 2, direction: 'arr', sched_arr_utc: '2024-07-19T11:30:00Z' };
+    const d2 = { flight_id: 3, direction: 'dep', sched_dep_utc: '2024-07-19T11:30:00Z' };
+    assert.deepEqual(byAtlTime([d1, d2, a]), [a, d2, d1]);
+});
+
+test('names the BTS cancellation codes', () => {
+    assert.equal(CANCELLATION.A, 'carrier');
+    assert.equal(CANCELLATION.B, 'weather');
 });
