@@ -71,7 +71,7 @@ Charts are hand-written SVG. There is no chart or date library.
 
 1. **Views:** write `012_app_read.sql` with the role and grants, and pytest fixtures covering an inbound flight that crosses ATL midnight, a cancelled flight, a diversion, a stale METAR and each break cause.
 2. **Report reuse:** `report.py` uses `is_adverse`, and the regenerated report must be identical to the current one.
-3. **App skeleton:** create `web/` from the Vue starter kit, remove auth, connect as `flightops_app`, add the routes and 404s, and write Pest tests.
+3. **App skeleton:** create `web/` from the plain Laravel skeleton with Inertia and Vue added by hand (no starter kit, so there is no auth to remove), connect as `flightops_app`, add the routes and 404s, and write Pest tests.
 4. **HubDay:** build the timeline, caveat panel and flight table.
 5. **TailDay:** build the legs view with gaps and neighbouring legs.
 6. **Verification and docs:** a browser walkthrough with screenshots, DECISIONS entries and a CLAUDE.md Status update.
