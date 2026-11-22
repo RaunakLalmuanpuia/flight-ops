@@ -37,10 +37,10 @@ This schema holds views and one function, and no data. Pipelines own it through 
 | `atl_flight` | flight touching ATL | `atl_day`, `direction` (`dep` or `arr`), and the flight's columns |
 | `hub_day_hourly` | day × local hour × direction | Scheduled and operated counts, plus counts for each status: on time, delayed 15+, diverted and cancelled |
 | `hub_day_weather` | ATL METAR | `atl_day`, local hour, `adverse`, wind, gust, visibility, ceiling, weather and raw text |
-| `hub_day_flights` | flight touching ATL | Times, carrier, other station, tail, status, delays, METAR, and the caveat flags `metar_stale`, `block_mismatch`, `aircraft_unresolved`, `aircraft_medium_confidence` and `rotation_break` |
+| `hub_day_flights` | flight touching ATL | Times, carrier, other station, tail, status, delays, METAR, and the caveat flags `metar_stale`, `block_mismatch`, `aircraft_unresolved`, `aircraft_medium_confidence`, `rotation_break` and `no_tail` |
 | `hub_day_caveats` | day | Counts of each caveat flag |
-| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), `leg_order` (numbers every leg, cancelled included), the aircraft link of each leg (`aircraft_id`, manufacturer, model, link method and confidence), the ATL local day of scheduled departure, gap minutes, break label, previous station, delays and the ATL METAR |
-| `tail_aircraft` | tail × linked aircraft | Manufacturer, model, link method and confidence, or the unresolved reason |
+| `tail_legs` | leg of a tail that touched ATL, plus its cancelled flights | `leg_seq` (null when cancelled), `leg_order` (numbers every leg, cancelled included), the aircraft link of each leg (`aircraft_id`, manufacturer, model, link method and confidence), the landed station and its timezone, the ATL local day of scheduled departure, gap minutes, break label, previous station, delays and the ATL METAR |
+| `tail_aircraft` | tail × linked aircraft | Manufacturer, model, link method and confidence, or the unresolved reason, with the first and last ATL day it applies to |
 
 Day boundaries, the adverse rule and break labels live only in SQL. PHP filters by `atl_day`, `tail_number` and `leg_order`, and nothing more.
 
