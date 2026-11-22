@@ -8,7 +8,7 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 - **Next action:** plan step 4, the FlightImpact page (see the App section of `docs/phase-3-plan.md`). It relies on propagate's default percentile (p10), and still has to decide how a diverted start is shown.
 - **Built so far:** phases 1 and 2 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the read-only ops console in `web/` (HubDay and TailDay pages). The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
-- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phase 2 and phase 3 steps 1-2. Step 3 is on branch `phase-3-backtest`, not yet merged.
+- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phase 2 and phase 3 steps 1-3.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
 
