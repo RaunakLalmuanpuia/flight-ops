@@ -1,15 +1,16 @@
 import argparse
 from datetime import date, datetime, timezone
 
-from flightops import db, pipeline, report
+from flightops import db, live, pipeline, report
 from flightops.sources import fetch, opensky, raw, registry
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="flightops")
-    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load", "build", "report", "all", "collect"])
+    parser.add_argument("command", choices=["migrate", "ddl", "fetch", "load", "build", "report", "all", "collect", "live"])
     parser.add_argument("--from", dest="first", type=date.fromisoformat)
     parser.add_argument("--to", dest="last", type=date.fromisoformat)
+    parser.add_argument("--every", type=int, default=60, help="seconds between live polls")
     args = parser.parse_args()
     command = args.command
 
@@ -27,6 +28,12 @@ def main() -> None:
             print("collected", path.name)
         with db.connect() as conn:
             print("opensky files:", len(opensky.load_all(conn)))
+    elif command == "live":
+        with db.connect() as conn:
+            try:
+                live.run(conn, args.every)
+            except KeyboardInterrupt:
+                print("stopped")
     else:
         with db.connect() as conn:
             if command in ("migrate", "all"):

@@ -82,3 +82,6 @@ flight-ops/
 | A state snapshot over the 9 sq° box costs 1 credit | 2026-11-22 ~17:46 UTC: remaining 3,999 of 4,000 after one call | 60 s polling uses 1,440 a day, as planned |
 | State vectors have 17 fields without `extended=1` | 161 aircraft, all with 17 fields | `STATE_FIELDS` as planned. A new field fails the write |
 | aviationweather METAR `reportTime` is rounded to the hour for routine METARs | 1652Z observation has `reportTime` 17:00 | Use `obsTime` for `observed_at` |
+| Live hex resolution against today's registry is high | 3 ticks on 2026-11-22 ~17:50 UTC: 158-163 aircraft, 148-153 with a tail (94%), 28 on the ground, all with a position | Hex to tail needs no fallback |
+| A little over half have a known operator | 87 of 158. The rest: 43 general aviation callsigns, 22 unknown prefixes, 5 blank callsigns. Unknown prefixes are scattered business and charter operators (`EJA`, `LXJ`, `EJM`, `CNS`, `SLI`), none more than 2 | No prefix added. The seed covers the airlines |
+| 10 of 158 hexes aren't in the FAA registry | All labelled `hex not in FAA registry`. One flies an N-number callsign | Kept with the reason, as the rules require |
