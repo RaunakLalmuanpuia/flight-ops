@@ -4,8 +4,8 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 3, decision support. The design is written in `docs/phase-3-plan.md`, waiting for the user's review.
-- **Next action:** after the user approves `docs/phase-3-plan.md`, write a task plan for steps 1-2 (`ontology.min_turn`, `app_read.propagate`) under `docs/plans/`.
+- **Current phase:** 3, steps 1-2 built: `ontology.min_turn` (migration 016) and `app_read.propagate` (migration 017).
+- **Next action:** plan step 3: `app_read.propagation_backtest`, the percentile choice, and `docs/phase-3-report.md`.
 - **Built so far:** phases 1 and 2 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the read-only ops console in `web/` (HubDay and TailDay pages). The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
 - **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so is all of phase 2.

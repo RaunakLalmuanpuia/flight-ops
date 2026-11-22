@@ -93,3 +93,5 @@ Measured values go here as steps finish.
   | YX | 311 | 28 | 32 | 40 |
 
   No carrier falls below 200 samples (smallest is YX at 311), so the all-carrier fallback is not used in July.
+
+- Checked `app_read.propagate(371994)` (N102DN, July 19) on the real July database. Selected DEN->ATL (316 min late), three cancelled rows at depth 1 (ATL->CLE, CLE->ATL, ATL->GEG), then flown ATL->BWI at depth 1: min turn 58 (DL p25), slack 213, predicted delay 0, `absorbed`. Its actual departure delay was 49 with no `late_aircraft` minutes. `explain analyze` execution time: 3.1 ms.

@@ -193,3 +193,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** turn times by airport or aircraft type, and a figure measured outside the month being backtested. The outage days are among the samples.
 - **Why:** turns differ by about 20 min between carriers at p10 (OH 28, DL 50), so one constant would be wrong for most of them. Finer cells get few samples, and 1.2% of flights have no aircraft type.
 - **Revisit if:** a second month is loaded. Then measure on one month and backtest on the other.
+
+## 2026-11-22: Propagate along the flown chain, and show cancelled legs without predicting them
+- **Chose:** `app_read.propagate` follows `rotation_leg.prev_flight_id`. Cancelled legs on the same tail scheduled inside a gap are returned as their own rows, with no prediction.
+- **Gave up:** a model of what the delay did to the schedule. For N102DN on July 19, the 316-min DEN→ATL is predicted as absorbed by the 02:50Z ATL→BWI, while the three legs scheduled in between were cancelled.
+- **Why:** flown legs have actual times to score against, and BTS gives no signal for predicting cancellations outside the outage. Showing the cancelled legs keeps what the model misses in plain view.
+- **Revisit if:** the backtest shows cancellations in the gap after most large delays. Then a cancellation model is worth its own phase.
