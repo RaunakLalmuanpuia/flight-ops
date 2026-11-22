@@ -12,7 +12,7 @@ Only the next phase gets detailed planning. Review and update this file before e
 | 6. Second hub | Does this work beyond ATL? | Same app on another hub, with a list of what broke | Mostly finding hidden ATL assumptions |
 | 7. Containerization | Can someone else run it from a clean checkout? | `docker compose up` reproduces the same counts and app | Compose for Postgres, pipelines and the app |
 
-Phases 1-3 plus a written outage case study are the core portfolio piece. Phases 4-6 are optional. Phase 7 comes last, whichever of those get built.
+Phases 1-3 plus a written outage case study are the core portfolio piece. That piece is done: see [case-study.md](case-study.md). Phases 4-6 are optional. Phase 7 comes last, whichever of those get built.
 
 ## Ordering
 
