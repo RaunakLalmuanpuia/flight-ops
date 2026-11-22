@@ -47,9 +47,10 @@ def main() -> None:
                 ):
                     print(f"{name}: {value}{'' if passed is None else ' ok' if passed else ' FAILED'}")
             if command in ("report", "all"):
-                path = db.REPO / "docs" / "phase-1-report.md"
-                path.write_text(report.render(conn))
-                print("wrote", path)
+                for name, parts in report.REPORTS.items():
+                    path = db.REPO / "docs" / name
+                    path.write_text(report.render(conn, *parts))
+                    print("wrote", path)
 
 
 if __name__ == "__main__":
