@@ -4,8 +4,8 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 2, in progress. Steps 1-2 are done: the `app_read` views (migrations 012-013) and the shared `ontology.is_adverse` (011).
-- **Next action:** plan steps 3-5 of `docs/phase-2-plan.md` (Laravel skeleton, HubDay, TailDay).
+- **Current phase:** 2, in progress. Steps 1-5 are done: the `app_read` views (migrations 011-014) and the Laravel app in `web/` with the HubDay and TailDay pages.
+- **Next action:** step 6 of `docs/phase-2-plan.md`: a browser walkthrough of July 19 with screenshots for the portfolio.
 - **Built so far:** phase 1 in full (see `docs/phase-1-plan.md`), plus `app_read` views read by the `flightops_app` role. The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect}`. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
 - **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are phase 2 steps 1-2.
