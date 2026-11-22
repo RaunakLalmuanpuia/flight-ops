@@ -1,0 +1,6 @@
+{"time": 1795368605, "states": [
+  ["a00001", "DAL1674 ", "United States", 1795368600, 1795368601, -84.4281, 34.6367, 3048.0, false, 200.0, 180.0, -5.08, null, 3100.0, "1234", false, 0],
+  ["a00002", "N200A   ", "United States", 1795368590, 1795368601, -83.2281, 33.6367, 914.4, false, 60.0, 270.0, 0.0, null, 950.0, null, false, 0],
+  ["a00003", "XYZ123  ", "United States", 1795368500, 1795368601, -84.4281, 33.6367, null, true, 0.0, 90.0, null, null, null, null, false, 0],
+  ["ffffff", null, "Mexico", null, 1795368601, null, null, null, false, null, null, null, null, null, null, false, 0]
+]}

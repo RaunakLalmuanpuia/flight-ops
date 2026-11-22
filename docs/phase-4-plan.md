@@ -76,3 +76,9 @@ flight-ops/
 - `DECISIONS.md` records the separate live tables, the hand-made callsign prefix table, and the hand-run loop.
 
 ## Notes
+
+| Finding | Evidence | Design consequence |
+|---|---|---|
+| A state snapshot over the 9 sq° box costs 1 credit | 2026-11-22 ~17:46 UTC: remaining 3,999 of 4,000 after one call | 60 s polling uses 1,440 a day, as planned |
+| State vectors have 17 fields without `extended=1` | 161 aircraft, all with 17 fields | `STATE_FIELDS` as planned. A new field fails the write |
+| aviationweather METAR `reportTime` is rounded to the hour for routine METARs | 1652Z observation has `reportTime` 17:00 | Use `obsTime` for `observed_at` |

@@ -94,3 +94,16 @@ def load_file(conn, source: str, table: str, path: Path) -> LoadResult:
                 (run_id, line, reason, fields),
             )
     return LoadResult(rows, False, len(quarantined))
+
+
+def write_csv(path: Path, columns: list[str], rows: list[dict]) -> None:
+    part = path.with_name(path.name + ".part")  # never leave a partial file under the real name
+    try:
+        with part.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, columns)  # raises on a field we don't expect
+            writer.writeheader()
+            writer.writerows(rows)
+    except ValueError:
+        part.unlink()
+        raise
+    part.rename(path)

@@ -1,4 +1,3 @@
-import csv
 import json
 import os
 import urllib.error
@@ -50,19 +49,6 @@ def _fetch(kind: str, day: date, token: str) -> list[dict] | None:
         raise
 
 
-def _write(path: Path, rows: list[dict]) -> None:
-    part = path.with_name(path.name + ".part")  # never leave a partial file under the real name
-    try:
-        with part.open("w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, COLUMNS)  # raises on a field we don't expect
-            writer.writeheader()
-            writer.writerows(rows)
-    except ValueError:
-        part.unlink()
-        raise
-    part.rename(path)
-
-
 def collect(first: date, last: date) -> list[Path]:
     DIR.mkdir(parents=True, exist_ok=True)
     token = None
@@ -78,7 +64,7 @@ def collect(first: date, last: date) -> list[Path]:
             if rows is None:
                 print(f"not ready: {path.name}")
                 continue
-            _write(path, rows)
+            raw.write_csv(path, COLUMNS, rows)
             written.append(path)
     return written
 
