@@ -333,3 +333,15 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a threshold that follows the data on a rebuild.
 - **Why:** `decision_review` counts frozen risks against it, and a value that moved silently would change past reviews. The phase 6 report shows `app_threshold_pct` beside the fitted threshold.
 - **Revisit if:** a rebuild makes the two disagree.
+
+## 2026-11-23: Show scored legs outside the chain as `scheduled` rows in `propagate`
+- **Chose:** `propagate` also returns the selected flight's scored next legs that its chain never reached, as `kind = 'scheduled'` rows with no depth and no delay prediction, after the chain. FlightImpact shows them with a `—` depth, and `record_decision` freezes them.
+- **Gave up:** a propagation table that holds only the flown chain and the cancellations in its gaps, and the spec's plain column on the chain rows.
+- **Why:** the chain alone hides about half the cancelled legs at ranks 2-3 (45.6% and 72.6% in `august` and `debby`). On N102DN's ATL→BWI, the two flagged cancellations after the absorbed BWI→ATL had no row. As rows they are frozen with no change to `record_decision`, and can be a decision's target. A separate panel would need its own frozen table and would show each risk twice.
+- **Revisit if:** the extra rows confuse readers of the chain. Then move them to a panel with its own frozen table.
+
+## 2026-11-23: Mark decisions logged before cancellation risk with a column, not a NULL check
+- **Chose:** `app.decision.cancel_risk_recorded`, false for the three decisions that existed at migration 027 and true for every later one. The pages show `recorded before cancellation risk` for false.
+- **Gave up:** nothing visible.
+- **Why:** a later decision on a flight the backtest never scored also has all-NULL risk, so NULLs can't tell "before" from "not scored".
+- **Revisit if:** never.

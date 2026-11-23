@@ -58,3 +58,27 @@ it('returns not found for a cancelled flight', function () {
 it('returns not found for an unknown flight', function () {
     $this->get('/flights/999999999')->assertNotFound()->assertInertia(fn (Assert $page) => $page->component('NotFound'));
 });
+
+it('scores the three cancelled legs after N102DN\'s 316-min arrival', function () {
+    $pct = fn ($r) => round(100 * (float) $r, 1);
+    $this->get('/flights/'.n102dn())->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('cancelThreshold', 0.183)
+        ->where('legs.0.cancel_risk', fn ($r) => $pct($r) === 49.5)
+        ->where('legs.0.cancel_risk_basis', 'DL, 1309 samples')
+        ->where('legs.2.cancel_risk', fn ($r) => $pct($r) === 46.7)
+        ->where('legs.3.flight_number', '2590')
+        ->where('legs.3.cancel_risk', null));  // ATL->BWI is rank 5
+});
+
+it('lists scored legs the chain never reached as scheduled rows', function () {
+    // ATL->BWI arrived 28 min late and BWI->ATL absorbed it, so the two cancelled legs after are outside the chain
+    $id = DB::selectOne("select flight_id from tail_legs where tail_number = 'N102DN' and leg_day = '2024-07-19' and flight_number = '2590'")->flight_id;
+    $this->get("/flights/{$id}")->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('legs', fn (Collection $legs) => $legs->map(fn ($l) => [$l['kind'], $l['flight_number'], $l['depth']])->all() === [
+            ['flown', '2950', 1], ['scheduled', '1069', null], ['scheduled', '1240', null],
+        ])
+        ->where('legs.1.cancelled', true)
+        ->where('legs.1.cancel_risk_basis', 'DL, 1300 samples')
+        ->where('legs.1.predicted_dep_delay', null)
+        ->where('stop', 'absorbed'));
+});

@@ -36,7 +36,11 @@ class DecisionController
              where l.decision_id = ? order by l.depth, l.kind = 'flown', l.sched_dep_utc",
             [$decision]);
 
-        return Inertia::render('Decision', ['decision' => $d, 'legs' => $legs]);
+        return Inertia::render('Decision', [
+            'decision' => $d,
+            'legs' => $legs,
+            'cancelThreshold' => (float) DB::selectOne('select cancel_risk_threshold() as t')->t,
+        ]);
     }
 
     public function store(Request $request, int $flight)

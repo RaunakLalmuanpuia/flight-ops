@@ -23,7 +23,7 @@ const cell = 'px-2 py-1';
                 <thead class="bg-slate-100 text-xs uppercase text-slate-600">
                     <tr>
                         <th :class="cell">Logged (Atlanta)</th><th :class="cell">Author</th><th :class="cell">Flight</th>
-                        <th :class="cell">Action</th><th :class="cell">Target</th><th :class="cell">Outcome</th>
+                        <th :class="cell">Action</th><th :class="cell">Target</th><th :class="cell">Outcome</th><th :class="cell">Cancel risk</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +41,10 @@ const cell = 'px-2 py-1';
                             <span v-else class="text-slate-500">none</span>
                         </td>
                         <td :class="cell">{{ outcome(d) }}</td>
+                        <td :class="cell">
+                            <template v-if="d.cancel_risk_recorded">{{ d.flagged_cancel_risk }} flagged</template>
+                            <span v-else class="text-slate-500">recorded before cancellation risk</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>

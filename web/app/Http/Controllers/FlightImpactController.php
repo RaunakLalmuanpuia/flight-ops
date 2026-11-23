@@ -28,7 +28,7 @@ class FlightImpactController
 
         // The actual delay passes NULL, so the page matches the backtest, which uses the actual arrival time
         $rows = collect(DB::select(
-            "select p.*, t.tail_number, t.leg_day, t.origin_tz, t.dest_tz, t.diverted, t.landed, t.landed_tz
+            "select p.*, t.tail_number, t.leg_day, t.origin_tz, t.dest_tz, t.diverted, t.landed, t.landed_tz, t.cancelled
              from propagate(?, ?) p join tail_legs t using (flight_id)
              order by p.depth, p.kind = 'flown', p.sched_dep_utc",
             [$flight, $whatIf ? (int) $given : null]));
@@ -42,6 +42,7 @@ class FlightImpactController
             'delay' => $whatIf ? (int) $given : $leg->arr_delay_min,
             'whatIf' => $whatIf,
             'stop' => $rows->pluck('stop_reason')->filter()->last(),
+            'cancelThreshold' => (float) DB::selectOne('select cancel_risk_threshold() as t')->t,
             // recorded_at is the transaction start, so decision_id breaks ties between decisions in one transaction
             'decisions' => DB::select(
                 'select decision_id, recorded_at, author, action, target_carrier, target_flight_number, target_origin, target_dest, match_label

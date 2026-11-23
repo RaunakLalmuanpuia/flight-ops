@@ -128,3 +128,31 @@ it('shows a what-if decision with its longer chain', function () {
 it('returns not found for an unknown decision', function () {
     $this->get('/decisions/999999999')->assertNotFound()->assertInertia(fn (Assert $page) => $page->component('NotFound'));
 });
+
+it('freezes the cancel risk with the decision and counts the flagged legs', function () {
+    decision(['action' => 'accept_delay', 'target' => null]);
+
+    $this->get('/decisions')->assertInertia(fn (Assert $page) => $page
+        ->where('decisions.0.cancel_risk_recorded', true)
+        ->where('decisions.0.flagged_cancel_risk', 3));  // 49.5%, 51.4% and 46.7%, all at or above 18.3%
+    $this->get('/decisions/'.pestDecisionId())->assertInertia(fn (Assert $page) => $page
+        ->where('cancelThreshold', 0.183)
+        ->where('legs.1.cancel_risk_basis', 'DL, 1309 samples')
+        ->where('legs.4.cancel_risk', null));
+});
+
+it('marks decisions logged before cancellation risk', function () {
+    $old = DB::select("select decision_id, cancel_risk_recorded, flagged_cancel_risk from decision_review where author = 'walkthrough' and decision_id <= 50");
+    expect($old)->toHaveCount(3)
+        ->and(collect($old)->every(fn ($d) => $d->cancel_risk_recorded === false && $d->flagged_cancel_risk === 0))->toBeTrue();
+    $this->get('/decisions/50')->assertInertia(fn (Assert $page) => $page->where('decision.cancel_risk_recorded', false));
+});
+
+it('takes a scheduled leg outside the chain as the target', function () {
+    $bwi = bwi();
+    $iah = DB::selectOne("select flight_id from propagate(?) where kind = 'scheduled' and flight_number = '1069'", [$bwi])->flight_id;
+    $this->post("/flights/{$bwi}/decisions", ['action' => 'cancel_leg', 'target' => $iah, 'reason' => 'flagged at cancel risk', 'author' => 'pest']);
+
+    $d = DB::selectOne("select target_kind, match_label, cancelled from decision_review where author = 'pest'");
+    expect([$d->target_kind, $d->match_label, $d->cancelled])->toBe(['scheduled', 'airline did the same', 0]);
+});

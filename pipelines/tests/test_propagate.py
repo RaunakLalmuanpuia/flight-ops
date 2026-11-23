@@ -52,6 +52,9 @@ def test_what_if_delay_replaces_the_actual_arrival(built):
     assert chain(built, "101", 0) == [
         (0, "selected", "101", None, None, None, None),
         (1, "flown", "102", 20, 0, False, "absorbed"),
+        # The chain stops at 102, so 101's other scored legs come back with no depth and no prediction.
+        (None, "scheduled", "103", None, None, None, None),
+        (None, "scheduled", "104", None, None, None, None),
     ]
 
 
