@@ -34,14 +34,15 @@ def rows(conn, percentile):
 
 def test_backtest_scores_pairs_from_rotation_legs(built):
     assert rows(built, 25) == [
-        ("101", "102", 1, "normal", 60, 40, 45, 45, False),
-        ("101", "103", 2, "normal", 60, 0, -5, None, False),  # absorbed here
-        ("101", "104", 3, "normal", 60, 0, 20, 0, False),  # past absorbed, propagate returned no row
-        ("102", "103", 1, "normal", 45, 0, -5, None, False),
-        ("102", "104", 2, "normal", 45, 0, 20, 0, False),
-        ("102", "105", 3, "normal", 45, 0, 0, None, False),
-        ("104", "105", 1, "normal", 20, 0, 0, None, False),
-        ("401", "402", 1, "outage", 60, 280, 300, 300, True),
+        ("101", "102", 1, "july_normal", 60, 40, 45, 45, False),
+        ("101", "103", 2, "july_normal", 60, 0, -5, None, False),  # absorbed here
+        ("101", "104", 3, "july_normal", 60, 0, 20, 0, False),  # past absorbed, propagate returned no row
+        ("102", "103", 1, "july_normal", 45, 0, -5, None, False),
+        ("102", "104", 2, "july_normal", 45, 0, 20, 0, False),
+        ("102", "105", 3, "july_normal", 45, 0, 0, None, False),
+        ("104", "105", 1, "july_normal", 20, 0, 0, None, False),
+        ("401", "402", 1, "july_outage", 60, 280, 300, 300, True),
+        ("501", "502", 1, "august", 60, 40, 45, 45, False),  # 11:00 arrival + DL p25 40 against an 11:00 departure
         # 201: break at depth 1, so 202 and 203 are excluded. 301: limit. 101->105 is depth 4.
     ]
 
@@ -53,7 +54,7 @@ def test_each_percentile_is_scored(built):
 
 def test_rebuild_replaces_backtest(built):
     pipeline.run_sql(built, "rotations/backtest.sql")
-    assert built.execute("select count(*) from ontology.propagation_backtest").fetchone() == (24,)
+    assert built.execute("select count(*) from ontology.propagation_backtest").fetchone() == (36,)  # 9 pairs x 4 percentiles
 
 
 def test_no_min_turn_leaves_backtest_empty_instead_of_raising(built):

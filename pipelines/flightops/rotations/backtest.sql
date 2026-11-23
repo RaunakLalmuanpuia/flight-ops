@@ -2,14 +2,14 @@ TRUNCATE ontology.propagation_backtest;
 
 WITH late AS (
     SELECT f.flight_id, r.tail_number, r.leg_seq, f.sched_dep_utc, f.arr_delay_min,
-           CASE WHEN f.flight_date BETWEEN '2024-07-19' AND '2024-07-23' THEN 'outage' ELSE 'normal' END AS period
+           ontology.period(f.flight_date) AS period  -- NULL outside the loaded months fails the NOT NULL column loudly
     FROM ontology.rotation_leg r
     JOIN ontology.flight f USING (flight_id)
     WHERE r.touched_atl AND f.arr_delay_min >= 15
       -- propagate raises without an all-carrier min turn, and a build with no late_aircraft samples has nothing to score.
       AND EXISTS (SELECT 1 FROM ontology.min_turn WHERE carrier_id IS NULL)
 ),
-pct AS (SELECT unnest(ARRAY[10, 25, 50]) AS percentile),
+pct AS (SELECT unnest(ARRAY[5, 10, 25, 50]) AS percentile),
 run AS MATERIALIZED (  -- one propagate call per late leg and percentile
     SELECT l.flight_id AS late_flight_id, p.percentile, x.depth, x.flight_id, x.predicted_dep_delay, x.stop_reason
     FROM late l
