@@ -285,3 +285,33 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** nothing changes in the app.
 - **Why:** choosing and scoring on the same month made phase 3's numbers in-sample. On August the model's depth-1 error is 13.2 min, against 46.5 for predict-0 and 35.6 for carry; on the Debby days (Aug 2-6) it is 13.8, against 49.4 and 43.4.
 - **Revisit if:** never, unless a later month disagrees.
+
+## 2026-11-23: Score cancellation risk with a rate table, not a regression
+- **Chose:** `ontology.cancel_rate`, July cancellation rates in cells of carrier × rank × delay bucket × carrier stress, with the all-carrier cell used when a carrier cell has fewer than 200 samples. `ontology.cancel_backtest` scores every inbound × target pair in both months against it.
+- **Gave up:** smooth effects within a bucket, interactions the cells don't hold, and features beyond these four.
+- **Why:** a table is the baseline a fitted model has to beat, and every rate traces to a cell and a sample count an operator can read. It beats both baselines in every period and rank (`august` rank 1 Brier 0.00448, against 0.00475 for delay alone and 0.00498 for the carrier's rate), and 96-99% of holdout pairs use the carrier's own cell (docs/phase-6-report.md).
+- **Revisit if:** a regression on the same pairs beats the table's Brier score on `august` and `debby`, or Debby-style underprediction matters to operators.
+
+## 2026-11-23: Decide at the inbound's actual departure, with stress from the carrier's cancellations excluding the own tail
+- **Chose:** the decision moment is the inbound's actual departure. Targets are the tail's next three legs by schedule, within 24h of its arrival. Stress is the cancelled share of the carrier's national departures scheduled in the window, without the inbound's own tail.
+- **Gave up:** the own tail's cancellations, which a controller would also see, and the en-route change after departure, which the arrival-delay feature still includes, as in `propagate`.
+- **Why:** after a long delay the target's own cancellation can fall in the window, and counting it would make the outcome its own feature.
+- **Revisit if:** the app moves the decision moment, such as scoring at the inbound's arrival.
+
+## 2026-11-23: Treat a cancellation as known from its scheduled departure
+- **Chose:** a cancellation enters stress only once its scheduled departure has passed.
+- **Gave up:** cancellations announced hours ahead, which a controller would have known about, so stress reads late on a developing bad day.
+- **Why:** BTS gives no announcement time, and counting a cancellation before its scheduled departure would use information that may not have existed yet.
+- **Revisit if:** a source with cancellation announcement times becomes available.
+
+## 2026-11-23: Count stress over whole UTC clock hours
+- **Chose:** the stress window is the three UTC hours before the hour of the inbound's departure, read from `ontology.carrier_hour`, so it ends 0-59 min before the decision moment.
+- **Gave up:** the exact `[t − 3h, t)` window from the phase plan, and with it the most recent cancellations.
+- **Why:** three primary-key lookups per inbound. `cancel_rate.sql` takes 17 s and `cancel_backtest.sql` 66 s, inside a 630 s full build, where the unindexed probe ran over 10 minutes. The buckets still separate: 0.67%, 2.65% and 15.68% cancelled in July.
+- **Revisit if:** the exact window changes the `august` Brier score, using a running count per carrier, one row per flight.
+
+## 2026-11-23: Flag cancellation risk at 18.3%, the July F1 maximum
+- **Chose:** a pair is flagged when its predicted rate is 18.3% or more, the threshold with the highest F1 (0.336) over all of July, ranks 1-3 pooled.
+- **Gave up:** a useful flag on ordinary bad days. It catches 71-74% of cancellations in the outage but 2-4% on `august` and 5-7% on `debby`, at 9-24% precision.
+- **Why:** the threshold is chosen on the fit month and scored on the holdout, as `min_turn`'s percentile was. July's F1 is set by the outage, so the flag marks outage-scale trouble. The rate itself is still shown for every scored leg.
+- **Revisit if:** operators want an earlier warning on weather days, at the cost of more false flags. Then choose the threshold on recall, or per period type.
