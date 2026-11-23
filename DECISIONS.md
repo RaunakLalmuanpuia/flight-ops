@@ -235,3 +235,21 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a page that is live without anyone acting, and any link from a live aircraft to a scheduled flight.
 - **Why:** the user doesn't want a background job on this Mac, pipelines stay the only writers, and BTS has no schedule for today. A full day costs 1,440 of the 4,000 daily state-vector credits.
 - **Revisit if:** a schedule source is added, or the app is containerized in phase 7 and a scheduler comes for free.
+
+## 2026-11-23: Write decisions through one SQL function
+- **Chose:** `app_read.record_decision`, a `SECURITY DEFINER` function that runs `propagate` and stores the decision with a frozen copy of the chain. `flightops_app` gets `EXECUTE` on it and nothing on `app`.
+- **Gave up:** Eloquent models and plain inserts from Laravel, so the write path is plpgsql, tested with pytest rather than Pest.
+- **Why:** the app's role still can't write anywhere directly, so read-only stays a database guarantee with one audited door, and the snapshot is exactly what `propagate` returned rather than what PHP copied.
+- **Revisit if:** the app needs writes that aren't decisions, such as user accounts. Those belong in Laravel-owned tables.
+
+## 2026-11-23: Create the `app` decision tables in a pipelines migration
+- **Chose:** `app.decision` and `app.decision_leg` in `db/migrations/022`, beside the views that read them.
+- **Gave up:** the convention that Laravel migrations cover `app`. Laravel still owns any future `app` tables of its own.
+- **Why:** `app_read.decision_review` joins the log to `ontology`, and one migration order avoids a view that depends on tables from a second migration system.
+- **Revisit if:** Laravel adds tables to `app` that pipelines' views need to read.
+
+## 2026-11-23: Keep the decision log append-only, with no foreign key to `ontology`
+- **Chose:** no `UPDATE` or `DELETE` for the app, and a correction is a new decision. Frozen legs keep carrier, flight number, origin and scheduled departure, and the review re-matches on those. A decision whose flight is gone is labelled `flight not found after rebuild`.
+- **Gave up:** referential integrity, and fixing a typo in place.
+- **Why:** `build` truncates `ontology.flight` with `RESTART IDENTITY`. A foreign key would block that or cascade into the log, and stored ids would point at different flights afterwards. The natural key is unique across all 634,613 July flights.
+- **Revisit if:** a second month makes the natural key collide, or operators need to amend decisions, which would call for an amendment table rather than edits.

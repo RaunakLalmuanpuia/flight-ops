@@ -4,11 +4,11 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 5 (operator workflow). Design approved in `docs/phase-5-plan.md`. Step 1 plan written in `docs/plans/2026-11-23-phase-5-decisions-db.md`, awaiting the user's review.
-- **Next action:** once the user approves the step 1 plan, build it (migration 022 and `tests/test_decisions.py`) with `superpowers:executing-plans` and TDD.
+- **Current phase:** 5 (operator workflow), on branch `phase-5`. Step 1 is built: migration 022 (`app.decision`, `app.decision_leg`, `app_read.record_decision`, `app_read.decision_legs`, `app_read.decision_review`) is applied to `flightops`, with tests in `tests/test_decisions.py`.
+- **Next action:** write the step 2 plan (FlightImpact decision panel and `POST /flights/{flight}/decisions`) with `superpowers:writing-plans`, then stop for review. Check Laravel's session driver and `DB_SEARCH_PATH` first.
 - **Built so far:** phases 1 to 4 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the read-only ops console in `web/` (HubDay, TailDay, FlightImpact and Live pages). The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect,live}`. `live` polls every 60 s (`--every`) until Ctrl-C. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
-- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phases 2, 3 and 4.
+- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phases 2, 3 and 4. Phase 5 is on the local branch `phase-5`.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
 

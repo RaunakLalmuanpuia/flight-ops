@@ -83,3 +83,51 @@ END
 $$;
 REVOKE EXECUTE ON FUNCTION app_read.record_decision(bigint, integer, text, bigint, text, text, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION app_read.record_decision(bigint, integer, text, bigint, text, text, integer) TO flightops_app;
+
+-- Each frozen leg beside what BTS shows for it now, matched on the natural key because flight ids restart on rebuild.
+CREATE VIEW app_read.decision_legs AS
+SELECT l.*,
+       coalesce(l.flight_id = d.target_flight_id, false) AS is_target,
+       f.flight_id      AS current_flight_id,
+       f.cancelled      AS actual_cancelled,
+       f.dep_delay_min  AS actual_dep_delay,
+       f.arr_delay_min  AS actual_arr_delay
+FROM app.decision_leg l
+JOIN app.decision d ON d.decision_id = l.decision_id
+LEFT JOIN (ontology.flight f
+           JOIN ontology.carrier c ON c.carrier_id = f.carrier_id
+           JOIN ontology.airport o ON o.airport_id = f.origin_airport_id)
+       ON c.code = l.carrier AND f.flight_number = l.flight_number
+      AND o.iata_code = l.origin AND f.sched_dep_utc = l.sched_dep_utc;
+
+CREATE VIEW app_read.decision_review AS
+SELECT d.decision_id, d.recorded_at, d.author, d.action, d.reason, d.arr_delay_min, d.what_if, d.percentile,
+       s.carrier, s.flight_number, s.origin, s.dest, s.sched_dep_utc,
+       s.current_flight_id, s.current_flight_id IS NOT NULL AS flight_found,
+       t.carrier AS target_carrier, t.flight_number AS target_flight_number, t.origin AS target_origin,
+       t.dest AS target_dest, t.sched_dep_utc AS target_sched_dep_utc, t.kind AS target_kind,
+       t.predicted_dep_delay AS target_predicted_dep_delay, t.actual_cancelled AS target_cancelled,
+       t.actual_dep_delay AS target_actual_dep_delay,
+       n.predicted_at_risk, n.actually_late, n.cancelled,
+       CASE
+           WHEN s.current_flight_id IS NULL OR (t.decision_id IS NOT NULL AND t.current_flight_id IS NULL)
+               THEN 'flight not found after rebuild'
+           WHEN t.decision_id IS NULL THEN NULL
+           WHEN t.actual_cancelled THEN
+               CASE d.action WHEN 'cancel_leg' THEN 'airline did the same' ELSE 'airline cancelled it' END
+           WHEN d.action = 'cancel_leg' THEN 'airline flew it, ' || m.actual
+           -- BTS records only the tail that flew, so a swap can't be confirmed.
+           WHEN d.action = 'swap_aircraft' THEN 'this tail flew it, ' || m.actual || ' (swap not visible)'
+           ELSE 'flown, ' || m.actual || coalesce(' vs predicted ' || m.predicted, ', no prediction')
+       END AS match_label
+FROM app.decision d
+JOIN app_read.decision_legs s ON s.decision_id = d.decision_id AND s.depth = 0
+LEFT JOIN app_read.decision_legs t ON t.decision_id = d.decision_id AND t.is_target
+CROSS JOIN LATERAL (SELECT
+    CASE WHEN t.actual_dep_delay >= 0 THEN '+' ELSE '' END || t.actual_dep_delay || ' min' AS actual,
+    CASE WHEN t.predicted_dep_delay >= 0 THEN '+' ELSE '' END || t.predicted_dep_delay AS predicted) m
+CROSS JOIN LATERAL (SELECT
+    count(*) FILTER (WHERE x.at_risk) AS predicted_at_risk,
+    count(*) FILTER (WHERE x.kind = 'flown' AND x.actual_dep_delay >= 15) AS actually_late,
+    count(*) FILTER (WHERE x.depth > 0 AND x.actual_cancelled) AS cancelled
+    FROM app_read.decision_legs x WHERE x.decision_id = d.decision_id) n;
