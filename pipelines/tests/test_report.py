@@ -114,4 +114,5 @@ def test_phase6_every_section_runs_and_has_a_heading(cancel_scored):
 def test_phase6_threshold_maximizes_july_f1(cancel_scored):
     # July predictions: 1.0 x3 (all cancelled), 0.5 x2 (one cancelled), 0.0 x2 (none); 4 cancelled in all.
     # Flagging at 0.5 catches 4 of 5 flagged and all 4 cancelled: F1 8/9, above 6/7 at 1.0 and 8/11 at 0.0.
-    assert "| 50.0 | 5 | 4 | 80.0 | 100.0 | 0.889 |" in phase6(cancel_scored)
+    # The app's threshold is fixed at 18.3 by migration 026, so it differs from this fixture's.
+    assert "| 50.0 | 5 | 4 | 80.0 | 100.0 | 0.889 | 18.3 |" in phase6(cancel_scored)

@@ -401,7 +401,9 @@ GROUP BY 1, 2 ORDER BY 1, 2""",
     ),
     (
         "Flag threshold",
-        "Chosen on all of July, ranks 1-3 pooled, as the predicted rate that maximizes F1 when every pair at or above it is flagged.",
+        "Chosen on all of July, ranks 1-3 pooled, as the predicted rate that maximizes F1 when every pair at or above it is flagged. "
+        "`app_threshold_pct` is the threshold `propagate`'s callers flag at (`app_read.cancel_risk_threshold`), "
+        "hard-coded in a migration, so the two must agree.",
         f"""WITH th AS ({THRESHOLD})
 SELECT round(100 * th.r, 1) AS threshold_pct,
        count(*) FILTER (WHERE b.predicted_rate >= th.r) AS flagged,
@@ -411,7 +413,8 @@ SELECT round(100 * th.r, 1) AS threshold_pct,
        round(100.0 * count(*) FILTER (WHERE b.predicted_rate >= th.r AND b.actual_cancelled)
              / nullif(count(*) FILTER (WHERE b.actual_cancelled), 0), 1) AS recall_pct,
        round(2.0 * count(*) FILTER (WHERE b.predicted_rate >= th.r AND b.actual_cancelled)
-             / (count(*) FILTER (WHERE b.predicted_rate >= th.r) + count(*) FILTER (WHERE b.actual_cancelled)), 3) AS f1
+             / (count(*) FILTER (WHERE b.predicted_rate >= th.r) + count(*) FILTER (WHERE b.actual_cancelled)), 3) AS f1,
+       round(100 * app_read.cancel_risk_threshold(), 1) AS app_threshold_pct
 FROM ontology.cancel_backtest b CROSS JOIN th
 WHERE b.period LIKE 'july_%' AND b.predicted_rate IS NOT NULL
 GROUP BY th.r""",
