@@ -26,7 +26,7 @@ flight-ops/
 
 | Object | One row per | Contents |
 |---|---|---|
-| `app.decision` | logged decision | `decision_id`, `flight_id`, the flight's natural key (carrier, flight number, origin, scheduled departure UTC), `arr_delay_min` used, `what_if`, `percentile`, `action`, target `flight_id` and natural key (nullable), `reason`, `author`, `recorded_at` |
+| `app.decision` | logged decision | `decision_id`, `flight_id` and target `flight_id` (nullable) as they were when recorded, `arr_delay_min` used, `what_if`, `percentile`, `action`, `reason`, `author`, `recorded_at`. The natural keys live on the frozen legs, which include the flight itself at depth 0 |
 | `app.decision_leg` | snapshot row | `decision_id` and `propagate`'s output as it was at decision time: depth, kind, flight and its natural key, schedule, min turn, slack, predicted delay, predicted arrival, at risk, stop reason |
 | `app_read.record_decision(flight, delay, action, target, reason, author)` | call | `SECURITY DEFINER`. Runs `propagate`, inserts the decision and its snapshot in one statement, returns `decision_id` |
 | `app_read.decision_review` | decision | the decision, its target's frozen prediction and actual outcome, the match label, and chain totals: predicted at risk, actually departing 15+ min late, cancelled |
