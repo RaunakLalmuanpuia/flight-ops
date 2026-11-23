@@ -266,8 +266,14 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Why:** July contains the outage, so any score drawn from July alone is in-sample. August gives a holdout for normal days, and possibly a second disruption.
 - **Revisit if:** a third month is loaded. Then `ontology.period`'s hard-coded dates become a table.
 
-## 2026-11-23: Count a tail as touching ATL across all loaded months
-- **Chose:** `rotation_leg.touched_atl` stays a property of the tail over all loaded data, so a tail that touched ATL only in August counts in July too.
-- **Gave up:** July figures that stay fixed when a month is added. July's ATL-tail legs went from 377,530 to 440,734.
-- **Why:** a month boundary shouldn't cut a rotation, and a per-month flag would break the July 31 to August 1 chain the national load exists to keep.
-- **Revisit if:** a report needs per-month ATL-tail counts. Then filter by `ontology.period` in that report, not in the flag.
+## 2026-11-23: Count a tail as touching ATL per calendar month
+- **Chose:** `rotation_leg.touched_atl` is true when the leg's tail touched ATL in the same calendar month as the leg's flight date. Rotations are still built across months.
+- **Gave up:** one ATL-tail set for the whole database. A tail that touched ATL on July 31 has its August 1 legs left out of August's ATL-tail figures until it returns to ATL in August.
+- **Why:** with one flag over all loaded data, adding August made July's ATL-tail legs grow from 377,530 to 440,734, so every July figure in the reports and case study moved. Per month, July stays at 377,530.
+- **Revisit if:** a backtest needs chains that cross a month boundary on tails that touched ATL only in the earlier month.
+
+## 2026-11-23: Treat August 2-6 as a separate period, Debby
+- **Chose:** `ontology.period` labels August 2-6 `debby`: 25, 74, 141, 129 and 45 ATL cancellations, mostly weather (code B), against an August median of 5 a day. The window is consecutive days at 3x the median or more.
+- **Gave up:** one August holdout, and a window chosen by a rule rather than by storm track. Single storm days later in August (9, 18-19, 29-30) stay in `august`.
+- **Why:** it is a weather disruption beside July's IT outage, and scoring it separately shows whether a model fitted on July holds up on a different kind of bad day. It is mild: at worst 6.8% of ATL flights were cancelled, against 43% on July 19.
+- **Revisit if:** a later month has a disruption on the outage's scale. Then that month, not Debby, tests the high-stress cells.

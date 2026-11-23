@@ -29,3 +29,11 @@ def test_period_labels_july_outage_and_august(conn):
     assert [g[0] for g in got] == [
         "july_normal", "july_outage", "july_outage", "july_normal", "august", "august", None,
     ]
+
+
+def test_debby_period_sits_inside_august(conn):
+    got = conn.execute(
+        "select ontology.period('2024-08-01'), ontology.period('2024-08-02'), ontology.period('2024-08-06'), "
+        "ontology.period('2024-08-07')"
+    ).fetchone()
+    assert got == ("august", "debby", "debby", "august")
