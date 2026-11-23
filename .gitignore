@@ -7,3 +7,11 @@ data/
 .idea/
 .vscode/
 graphify-out/
+
+# AI agent files, not part of the project
+CLAUDE.md
+AGENTS.md
+.claude/
+.superpowers/
+.impeccable/
+docs/plans/
