@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import Term from './Term.vue';
 import { Link } from '@inertiajs/vue3';
 import { atlEvent, byAtlTime, CANCELLATION, CAVEATS, caveatsOf, delayText, filterFlights } from '../lib/flights.js';
 import { ATL_TZ, localTime, utcTitle } from '../lib/time.js';
@@ -7,7 +8,7 @@ import { ATL_TZ, localTime, utcTitle } from '../lib/time.js';
 const props = defineProps({ flights: Array, day: String, filters: Object });
 const emit = defineEmits(['update:filters']);
 
-const STATUS = { on_time: 'On time', delayed: 'Delayed 15+', diverted: 'Diverted', cancelled: 'Cancelled' };
+const STATUS = { on_time: 'On time', delayed: 'Late 15+ min', diverted: 'Diverted', cancelled: 'Cancelled' };
 const BADGE = { on_time: 'bg-slate-100 text-slate-700', delayed: 'bg-amber-100 text-amber-900', diverted: 'bg-violet-100 text-violet-900', cancelled: 'bg-red-100 text-red-800' };
 
 const carriers = computed(() => [...new Set(props.flights.map((f) => f.carrier))].sort());
@@ -42,7 +43,7 @@ const pad = (h) => String(h).padStart(2, '0');
                     <option value="">All</option><option v-for="h in 24" :key="h" :value="h - 1">{{ pad(h - 1) }}:00</option>
                 </select>
             </label>
-            <label class="text-sm">Caveat
+            <label class="text-sm">Data warning
                 <select class="ml-1 rounded border border-slate-300 bg-white px-1 py-0.5" :value="filters.caveat" @change="set('caveat', $event.target.value)">
                     <option value="">Any</option><option v-for="(label, key) in CAVEATS" :key="key" :value="key">{{ label }}</option>
                 </select>
@@ -54,9 +55,9 @@ const pad = (h) => String(h).padStart(2, '0');
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-100 text-xs uppercase text-slate-600">
                     <tr>
-                        <th class="px-2 py-1">ATL time</th><th class="px-2 py-1">Flight</th><th class="px-2 py-1">From / to</th>
-                        <th class="px-2 py-1">Tail</th><th class="px-2 py-1">Status</th><th class="px-2 py-1">Delay</th>
-                        <th class="px-2 py-1">METAR age</th><th class="px-2 py-1">Caveats</th>
+                        <th class="px-2 py-1">Atlanta time</th><th class="px-2 py-1">Flight</th><th class="px-2 py-1">From / to</th>
+                        <th class="px-2 py-1"><Term k="tail" label="Aircraft" /></th><th class="px-2 py-1">Status</th><th class="px-2 py-1"><Term k="delay_cause" label="Delay" /></th>
+                        <th class="px-2 py-1"><Term k="metar" label="Weather report age" /></th><th class="px-2 py-1">Data warnings</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,7 +67,7 @@ const pad = (h) => String(h).padStart(2, '0');
                             <span v-if="atlEvent(f).actual" class="text-slate-500" :title="utcTitle(atlEvent(f).actual)"> → {{ localTime(atlEvent(f).actual, ATL_TZ) }}</span>
                         </td>
                         <td class="px-2 py-1 whitespace-nowrap">
-                            <Link v-if="f.tail_number && f.arr_delay_min >= 15" :href="`/flights/${f.flight_id}`" class="text-sky-700 underline" title="What this late arrival puts at risk downstream">{{ f.carrier }} {{ f.flight_number }}</Link>
+                            <Link v-if="f.tail_number && f.arr_delay_min >= 15" :href="`/flights/${f.flight_id}`" class="text-sky-700 underline" title="See which later flights this late arrival puts at risk">{{ f.carrier }} {{ f.flight_number }}</Link>
                             <template v-else>{{ f.carrier }} {{ f.flight_number }}</template>
                         </td>
                         <td class="px-2 py-1 whitespace-nowrap">
@@ -77,14 +78,14 @@ const pad = (h) => String(h).padStart(2, '0');
                             <Link v-if="f.tail_number" :href="`/tail/${f.tail_number}/${f.tail_day}`" class="text-sky-700 underline">{{ f.tail_number }}</Link>
                             <span v-else class="text-slate-400">—</span>
                         </td>
-                        <td class="px-2 py-1"><span class="badge" :class="BADGE[f.status]" :title="f.cancellation_code ? `BTS cancellation code ${f.cancellation_code}` : null">{{ STATUS[f.status] }}<template v-if="f.cancellation_code"> · {{ CANCELLATION[f.cancellation_code] ?? f.cancellation_code }}</template></span></td>
+                        <td class="px-2 py-1"><span class="badge" :class="BADGE[f.status]" :title="f.cancellation_code ? `Cancellation reason code ${f.cancellation_code}` : null">{{ STATUS[f.status] }}<template v-if="f.cancellation_code"> · {{ CANCELLATION[f.cancellation_code] ?? f.cancellation_code }}</template></span></td>
                         <td class="px-2 py-1">
                             <span v-if="atlEvent(f).delay !== null">{{ atlEvent(f).delay }} min</span>
                             <div v-if="delayText(f.delays)" class="text-xs text-slate-500"><template v-if="f.direction === 'dep'">arrival delay causes: </template>{{ delayText(f.delays) }}</div>
                         </td>
                         <td class="px-2 py-1">
                             <span v-if="f.metar_staleness_min !== null">{{ f.metar_staleness_min }} min</span><span v-else class="text-slate-400">none</span>
-                            <span v-if="f.metar_adverse" class="badge ml-1 bg-sky-100 text-sky-900">adverse</span>
+                            <span v-if="f.metar_adverse" class="badge ml-1 bg-sky-100 text-sky-900">bad weather</span>
                         </td>
                         <td class="px-2 py-1">
                             <span v-for="c in caveatsOf(f)" :key="c" class="badge mr-1 bg-amber-50 text-amber-900">{{ CAVEATS[c] }}</span>

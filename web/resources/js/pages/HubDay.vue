@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import Term from '../components/Term.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PageHelp from '../components/PageHelp.vue';
 import TourBar from '../components/TourBar.vue';
@@ -12,8 +13,8 @@ defineProps({ day: String, range: Object, hourly: Array, weather: Array, caveats
 
 const filters = ref({ direction: '', carrier: '', status: '', hour: null, caveat: '' });
 const LEGEND = [
-    ['bg-slate-400', 'On time'], ['bg-amber-500', 'Delayed 15+'], ['bg-violet-500', 'Diverted'], ['bg-red-600', 'Cancelled'],
-    ['bg-sky-100', 'METAR'], ['bg-sky-700', 'Adverse METAR'], ['bg-slate-200', 'No METAR'],
+    ['bg-slate-400', 'On time'], ['bg-amber-500', 'Late 15+ min'], ['bg-violet-500', 'Diverted'], ['bg-red-600', 'Cancelled'],
+    ['bg-sky-100', 'Weather report'], ['bg-sky-700', 'Bad weather'], ['bg-slate-200', 'No weather report'],
 ];
 </script>
 
@@ -41,6 +42,7 @@ const LEGEND = [
             <ul class="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
                 <li v-for="[color, label] in LEGEND" :key="label" class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm ring-1 ring-slate-300" :class="color" />{{ label }}</li>
             </ul>
+            <p class="mt-1 text-xs text-slate-500"><Term k="metar" /> · <Term k="adverse_metar" /> · <Term k="delay_15" /></p>
         </section>
 
         <CaveatPanel :caveats="caveats" :active="filters.caveat" @toggle="(c) => (filters = { ...filters, caveat: c })" />
