@@ -38,7 +38,7 @@ Select a late arrival, and the FlightImpact page follows that aircraft's next fl
 
 The minimum turn is measured, not assumed. It comes from July turns where the next leg reported a `late_aircraft` delay, so the aircraft was the constraint. Carriers differ: [at the 10th percentile](phase-3-report.md#min-turn), Delta turns in 50 minutes and PSA (`OH`) in 28. One constant would be wrong for most of them.
 
-The model was then backtested on every late arrival in July and August on tails that touched ATL, [117,818 legs](phase-3-report.md#what-the-model-misses) in July alone, each scored against up to its next three flights. Pairs come from the aircraft's flown chain rather than from the model's own output, so legs the model called "absorbed" are still scored, which is where it can be wrong. The turn percentile was [chosen on July's normal days](phase-3-report.md#percentile-choice) (p10, with error 13.0 minutes, against 13.2 at p5, 14.7 at p25 and 20.4 at p50). August scores it, and neither the turns nor the choice saw August.
+The model was then backtested on every late arrival in July and August on tails that touched ATL, [117,818 legs](phase-3-report.md#what-the-model-misses) in July and 87,004 in August, each scored against up to its next three flights. Pairs come from the aircraft's flown chain rather than from the model's own output, so legs the model called "absorbed" are still scored, which is where it can be wrong. The turn percentile was [chosen on July's normal days](phase-3-report.md#percentile-choice) (p10, with error 13.0 minutes, against 13.2 at p5, 14.7 at p25 and 20.4 at p50). August scores it, and neither the turns nor the choice saw August.
 
 The model beats both obvious baselines, predicting no delay and carrying the full delay forward, [at every depth, for both targets, in every period](phase-3-report.md#late-aircraft-minutes-against-baselines). At the first downstream flight:
 
@@ -64,14 +64,14 @@ That isn't an edge case. On normal July days, [1.7% of late arrivals](phase-3-re
 The other limits are stated in the [phase 3 report](phase-3-report.md#limits):
 
 - **Aircraft only.** BTS has no crew or passenger connections. The model undercounts departure delay by [13.7 minutes in August, 17.4 on normal July days and 33.8 in the outage](phase-3-report.md#departure-delay-against-baselines), the gap that other causes fill.
-- **Fit on July, scored on August.** The turns and the percentile come from July and are scored on August, where the first-leg error is 13.2 minutes against 13.0 in sample. Debby (Aug 2-6) is a second, [milder disruption](../DECISIONS.md#2026-11-23-treat-august-2-6-as-a-separate-period-debby): at worst 6.8% of ATL flights were cancelled, against 43% on July 19. The outage is inside the fit month, so its scores are not out of sample.
-- **Shorter turns score worse.** p5 was tested and scored 13.2 minutes on July's normal days, against 13.0 at p10, even though p10 still overpredicts the first leg by 5.0 minutes on average.
+- **Fit on July, scored on August.** The turns and the percentile come from July and are scored on August, where the first-leg error is [13.2 minutes](phase-3-report.md#late-aircraft-minutes-against-baselines) against 13.0 in sample. Debby (Aug 2-6) is a second, [milder disruption](../DECISIONS.md#2026-11-23-treat-august-2-6-as-a-separate-period-debby): at worst 6.8% of ATL flights were cancelled, against 43% on July 19. The outage is inside the fit month, so its scores are not out of sample.
+- **Shorter turns score worse.** [p5](phase-3-report.md#percentile-choice) was tested and scored [13.2 minutes](phase-3-report.md#late-aircraft-minutes-against-baselines) on July's normal days, against 13.0 at p10, even though p10 still overpredicts the first leg by 5.0 minutes on average.
 - **Hindsight in the chain.** The model follows the order the aircraft actually flew, which a controller wouldn't know in advance. It matters little here: [248 of 190,834](phase-3-report.md#what-the-model-misses) scored pairs in August involve a swap.
 
 ## What I'd do next
 
 1. **A second month, done.** Turns and the percentile are now [fitted on July and scored on August](../DECISIONS.md#2026-11-23-choose-the-min-turn-percentile-on-july-and-score-it-on-august), 13.2 minutes against 13.0 in sample, with Debby as a second, milder disruption.
-2. **Model cancellation risk, in progress.** The outage shows that the high-stakes decision is often cancellation, and the data already carries cause codes, scheduled flying and the gaps where flights disappear. This is the current phase, fitted on July and scored on August.
+2. **Model cancellation risk, in progress.** The outage shows that the high-stakes decision is often cancellation, and the data already carries cause codes, scheduled flying and the gaps where flights disappear. This is the current phase, to be fitted on July and scored on August.
 3. **Then go live.** Current weather and positions (phase 4) are worth more once the model answers the question that matters during a bad day.
 
 The pattern behind all of this is the same: check the data before trusting it, keep the cases where it disagrees with itself visible, and when the model can't see something, put it on screen anyway with a label instead of leaving it out.

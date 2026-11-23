@@ -211,6 +211,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a more cautious turn. p10 flags fewer legs at risk: depth-1 recall falls from 95.0% at p25 to 89.0%, while precision rises from 88.5% to 90.1%.
 - **Why:** the backtest scores the error in minutes, which is what the page shows. p10 is the edge of the grid and still overpredicts depth 1 by 5 min on average, so the best turn may be shorter.
 - **Revisit if:** a second month is loaded. Then choose on one month and score on the other, and try percentiles below p10.
+- **Superseded by:** 2026-11-23, "Choose the min-turn percentile on July and score it on August".
 
 ## 2026-11-22: Start a diverted flight's chain from its landing, with no what-if
 - **Chose:** the FlightImpact page propagates a diverted flight from its actual landing time, says that BTS gives no arrival delay for a diversion, and shows no delay form. A `?delay=` on a diverted flight fails validation.
@@ -269,7 +270,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 ## 2026-11-23: Count a tail as touching ATL per calendar month
 - **Chose:** `rotation_leg.touched_atl` is true when the leg's tail touched ATL in the same calendar month as the leg's flight date. Rotations are still built across months.
 - **Gave up:** one ATL-tail set for the whole database. A tail that touched ATL on July 31 has its August 1 legs left out of August's ATL-tail figures until it returns to ATL in August.
-- **Why:** with one flag over all loaded data, adding August made July's ATL-tail legs grow from 377,530 to 440,734, so every July figure in the reports and case study moved. Per month, July stays at 377,530.
+- **Why:** with one flag over all loaded data, adding August made July's ATL-tail legs grow from 377,530 to 440,734, so every July figure in the reports and case study moved. Per month, July stays at 377,530. Late-leg counts hold, but chains from late-July legs now run into August 1, so July pairs and scores moved slightly: `july_normal` depth-1 pairs 49,076 to 49,243, error against predict-0 and carry 48.4 / 36.1 to 48.3 / 36.4, cancelled in the gap 1,470 to 1,501.
 - **Revisit if:** a backtest needs chains that cross a month boundary on tails that touched ATL only in the earlier month.
 
 ## 2026-11-23: Treat August 2-6 as a separate period, Debby
