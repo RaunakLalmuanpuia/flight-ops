@@ -24,6 +24,10 @@ When the user says "start phase N" or "continue":
 4. Use `superpowers:writing-plans` for only the next few steps of the phase, then stop for the user's review before building. Save it under `docs/plans/`.
 5. After approval, build with `superpowers:executing-plans` and `superpowers:test-driven-development`, and use `superpowers:verification-before-completion` before calling a step done.
 
+## Knowledge graph
+
+`graphify-out/` (gitignored) holds a graphify graph of the repo. Git hooks installed by `graphify hook install` rebuild it from changed code after each commit, checkout, merge and rebase, with no LLM. They skip docs and screenshots, so if a session changed any `.md`, `.txt` or image file, run `/graphify . --update` once before wrapping up. For questions about how the codebase fits together, check `graphify-out/GRAPH_REPORT.md` or `graphify query` first.
+
 ## Stack
 
 - **Pipelines:** Python, managed with `uv`. Pipelines are the only writers to `raw`, `staging`, `ontology` and `dq`.
