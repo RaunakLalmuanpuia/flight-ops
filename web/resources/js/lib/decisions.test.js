@@ -31,6 +31,11 @@ test('a target is labelled with its depth, route and local departure', () => {
     assert.equal(targetLabel({ ...leg, kind: 'cancelled' }), '2 · DL 2590 ATL → BWI · Jul 19 22:50 · cancelled');
 });
 
+test('a scheduled leg outside the chain has no depth', () => {
+    const leg = { depth: null, kind: 'scheduled', carrier: 'DL', flight_number: '1069', origin: 'IAH', dest: 'ATL', sched_dep_utc: '2024-07-20 11:00:00+00', origin_tz: 'America/Chicago' };
+    assert.equal(targetLabel(leg), '— · DL 1069 IAH → ATL · Jul 20 06:00 · outside the chain');
+});
+
 test('outcome is the match label, or the chain totals without a target', () => {
     assert.equal(outcome({ match_label: 'airline did the same' }), 'airline did the same');
     assert.equal(

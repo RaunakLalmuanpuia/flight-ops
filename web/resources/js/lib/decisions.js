@@ -30,7 +30,8 @@ export function rememberAuthor(author, storage = globalThis.localStorage) {
 
 export function targetLabel(leg) {
     const when = `${localDate(leg.sched_dep_utc, leg.origin_tz)} ${localTime(leg.sched_dep_utc, leg.origin_tz)}`;
-    return `${leg.depth} · ${leg.carrier} ${leg.flight_number} ${leg.origin} → ${leg.dest} · ${when}${leg.kind === 'cancelled' ? ' · cancelled' : ''}`;
+    const note = { cancelled: ' · cancelled', scheduled: ' · outside the chain' }[leg.kind] ?? '';
+    return `${leg.depth ?? '—'} · ${leg.carrier} ${leg.flight_number} ${leg.origin} → ${leg.dest} · ${when}${note}`;
 }
 
 export const HINDSIGHT =
