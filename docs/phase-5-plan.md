@@ -73,3 +73,7 @@ flight-ops/
 
 | Finding | Evidence | Design consequence |
 |---|---|---|
+| Recording a decision is fast enough for a form post | `record_decision` on N102DN's DEN→ATL: 92 ms, including `propagate` and the 5-leg snapshot | No async write or queue |
+| The natural key is unique for July | 634,613 flights, 634,613 distinct (carrier, flight number, origin, scheduled departure) | Re-matching after a rebuild needs no tiebreak |
+| Inertia v3 sends the CSRF token by default | Its client reads `XSRF-TOKEN` and sends `X-XSRF-TOKEN`. A replayed POST without it got 419, with it 302 | No CSRF setup in the app |
+| The review shows what the model misses | Walkthrough on N102DN, July 19: accepting the 316-min delay predicted 0 legs at risk, while 1 left late and 3 were cancelled. A 600-min what-if hold on BWI→ATL 2950 predicted +0; it left 308 min late with no late-aircraft minutes | The cancellation-risk phase the case study recommends would have something to score against |

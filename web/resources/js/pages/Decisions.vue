@@ -32,7 +32,7 @@ const cell = 'px-2 py-1';
                         <td :class="cell">{{ d.author }}</td>
                         <td :class="cell" class="whitespace-nowrap">
                             <Link :href="`/decisions/${d.decision_id}`" class="text-sky-700 underline">{{ d.carrier }} {{ d.flight_number }} {{ d.origin }} → {{ d.dest }}</Link>
-                            <span class="text-slate-500"> {{ utcTitle(d.sched_dep_utc) }}</span>
+                            <span class="ml-1 text-slate-500">{{ utcTitle(d.sched_dep_utc) }}</span>
                             <span v-if="d.what_if" class="text-slate-500"> · what-if {{ d.arr_delay_min }} min</span>
                         </td>
                         <td :class="cell">{{ ACTIONS[d.action] }}</td>

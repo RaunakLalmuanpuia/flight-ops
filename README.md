@@ -30,13 +30,19 @@ From the generated [Phase 3 report](docs/phase-3-report.md):
 
 ![N102DN on July 19, 2024](docs/screenshots/tail-N102DN-2024-07-19.png)
 
-The app reads through a database role that can only select from a schema of views, so the rules for days, statuses and labels live in tested SQL, and the app cannot write.
+The app reads through a database role that can only select from a schema of views, so the rules for days, statuses and labels live in tested SQL. Its one write is logging a decision, through a single database function.
 
 ## Decision support
 
 ![Downstream impact of N102DN's late arrival](docs/screenshots/flight-N102DN-2024-07-19.png)
 
 Open any flown leg, or a late arrival on the hub page, to follow its aircraft's next flights. Each is predicted from the previous arrival, the carrier's minimum turn measured from July, and the schedule. Flights at risk of a 15-minute delay are flagged, the actual delays sit beside the predictions, and a what-if box propagates a different arrival delay. Cancelled flights in the gaps are shown in grey and never predicted.
+
+## Decision log
+
+![A logged what-if decision on N102DN](docs/screenshots/decision-N102DN-what-if.png)
+
+From any flight's impact page, a controller can log a decision (accept the delay, hold a departure, swap aircraft, cancel a leg) with a reason. The predicted chain is frozen with it. The log puts each decision next to what BTS shows happened: whether the airline cancelled the target leg, and how late it actually left against the frozen prediction. The log is append-only and survives a rebuild of the data, re-matching each flight on carrier, flight number, origin and scheduled departure. Decisions are made with the July outcome already visible, so this is an audit trail, not a test of foresight.
 
 ## How it works
 
@@ -54,7 +60,7 @@ OpenSky ADS-B ────┘                     rotations, weather
 
 Scale: 634,613 flights for the month (the national file, so rotations don't break when an aircraft leaves ATL), 60,144 touching ATL, 7,280 airframes, 10,496 METARs.
 
-Trade-offs are logged in [DECISIONS.md](DECISIONS.md), and the plan for later phases is in [docs/roadmap.md](docs/roadmap.md): live data, operator decisions, a second hub and containers.
+Trade-offs are logged in [DECISIONS.md](DECISIONS.md), and the plan for later phases is in [docs/roadmap.md](docs/roadmap.md): a second hub and containers.
 
 ## Stack
 
