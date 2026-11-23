@@ -33,7 +33,7 @@ it('returns not found for a tail that never touched ATL', function () {
 });
 
 it('returns not found for a day outside the range', function () {
-    $this->get('/tail/N103DY/2024-08-01')->assertNotFound();
+    $this->get('/tail/N103DY/2024-09-01')->assertNotFound();
 });
 
 it('opens the tail day that holds the flight clicked on the hub', function () {

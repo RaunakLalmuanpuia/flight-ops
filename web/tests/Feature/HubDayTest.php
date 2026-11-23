@@ -30,7 +30,7 @@ it('names the loaded range for a day outside it', function (string $day) {
     $this->get("/day/{$day}")->assertNotFound()->assertInertia(fn (Assert $page) => $page
         ->component('NotFound')
         ->where('range.first_day', '2024-07-01'));
-})->with(['2024-08-01', '2024-06-30', '2024-07-32', '2024-02-30']);
+})->with(['2024-09-01', '2024-06-30', '2024-07-32', '2024-02-30']);
 
 it('rejects a malformed date with the range page', function () {
     $this->get('/day/july-19')->assertNotFound()->assertInertia(fn (Assert $page) => $page->component('NotFound'));
