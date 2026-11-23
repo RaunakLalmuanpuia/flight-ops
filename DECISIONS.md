@@ -345,3 +345,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** nothing visible.
 - **Why:** a later decision on a flight the backtest never scored also has all-NULL risk, so NULLs can't tell "before" from "not scored".
 - **Revisit if:** never.
+
+## 2026-11-23: Run the tour on the real pages with a URL step, not an overlay library
+- **Chose:** a `?tour=N` query parameter read by a `TourBar` strip on the real console pages, with five steps over N102DN on July 19 (`web/resources/js/lib/tour.js`). Industry terms stay on screen as "plain word (TERM) ⓘ", defined once in `lib/glossary.js`, and the data warning chips take their names from it.
+- **Gave up:** arrows pointing at exact elements, and remembering tour progress across visits. A link that drops the parameter ends the tour.
+- **Why:** no dependency, nothing breaks when a layout changes, any step can be shared as a link, and the reader uses the real tool. Keeping the terms (rather than only plain words) keeps the domain vocabulary visible to readers who know it.
+- **Revisit if:** people get lost without element-level highlighting, or the console grows past a handful of pages.
