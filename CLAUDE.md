@@ -4,11 +4,11 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 6 (cancellation risk), step 1 done on branch `phase-6-august-holdout`: August 2024 is loaded beside July, `ontology.period` labels `july_normal`, `july_outage`, `debby` and `august`, and phase 3 is re-scored with July as the fit set and August as the holdout. Measured notes are in `docs/phase-6-plan.md`.
+- **Current phase:** 6 (cancellation risk), step 1 done and merged to `main`: August 2024 is loaded beside July, `ontology.period` labels `july_normal`, `july_outage`, `debby` and `august`, and phase 3 is re-scored with July as the fit set and August as the holdout. Measured notes are in `docs/phase-6-plan.md`.
 - **Next action:** write the step 2 task plan (rate table and backtest) with `superpowers:writing-plans`, under `docs/plans/`, then stop for the user's review. Pushing to GitHub is still open.
 - **Built so far:** phases 1 to 5 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the ops console in `web/` (read-only except for logging decisions) (HubDay, TailDay, FlightImpact, Live, Decisions and Decision pages). The decision log in `app` holds three kept walkthrough decisions on N102DN by author `walkthrough`. The local `flightops` database holds the July and August 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect,live}`. `live` polls every 60 s (`--every`) until Ctrl-C. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
-- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phases 2, 3, 4 and 5. Phase 6 step 1 is committed on `phase-6-august-holdout`, not merged.
+- **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phases 2, 3, 4 and 5. Phase 6 step 1 is merged to `main` locally, not pushed.
 
 Keep this section current: update it at the end of every work session and whenever a step finishes, so a new session knows where things stand without being told.
 
