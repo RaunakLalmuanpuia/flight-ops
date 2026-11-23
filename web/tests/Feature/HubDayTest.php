@@ -4,10 +4,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('sends home to the first outage day', function () {
-    $this->get('/')->assertRedirect('/day/2024-07-19');
-});
-
 it('shows every ATL flight of the ATL local day', function () {
     $metars = DB::selectOne("select count(*) as n from hub_day_weather where atl_day = '2024-07-19'")->n;
 

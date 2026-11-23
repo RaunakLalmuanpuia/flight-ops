@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue';
+import Term from '../components/Term.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import PageHelp from '../components/PageHelp.vue';
+import TourBar from '../components/TourBar.vue';
 import { ATL_TZ, localTime } from '../lib/time.js';
 import { freshness, motion, LIVE_REASONS } from '../lib/live.js';
 
@@ -9,37 +12,45 @@ const fresh = computed(() => freshness(props.status.states_loaded_at, props.stat
 const latest = computed(() => props.weather[0] ?? null);
 const reason = (r) => LIVE_REASONS[r] ?? r;
 const CAVEATS = [
-    'No schedule: BTS is published months late, so there are no flight numbers, delays or propagation here.',
-    'Operators come from the callsign prefix. Regional flights sold as Delta fly as Endeavor (EDV) or SkyWest (SKW).',
-    'Positions are OpenSky ADS-B and can lag by a few seconds to minutes. Each row shows how old its position is.',
+    'No schedule: US flight records (BTS) are published months late, so there are no flight numbers, delays or predictions here.',
+    'The airline comes from the start of the radio name (callsign). Regional flights sold as Delta fly as Endeavor (EDV) or SkyWest (SKW).',
+    'Positions come from aircraft broadcasts (ADS-B) collected by OpenSky, and can lag by a few seconds to minutes. Each row shows how old its position is.',
 ];
 </script>
 
 <template>
     <Head title="ATL live" />
+    <TourBar />
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">ATL · live <span class="text-sm font-normal text-slate-500">(Atlanta local time)</span></h1>
+            <Link href="/guide" class="text-sm text-sky-700 underline">Guide</Link>
             <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July–August 2024 history →</Link>
         </header>
+
+        <PageHelp>
+            <p><strong>What this shows:</strong> aircraft near Atlanta right now, from their own position broadcasts, plus the latest airport weather report.</p>
+            <p><strong>How to read it:</strong> each row is one aircraft within about 90 nautical miles. A registration links to that plane's last day in the July 2024 data. Grey text explains why an aircraft or operator could not be identified.</p>
+            <p><strong>Limits:</strong> there is no schedule here, because US flight records are published months late. So this page has no delays or predictions.</p>
+        </PageHelp>
 
         <p v-if="fresh.state === 'never'" role="status" class="rounded border border-slate-300 bg-slate-50 p-3 text-sm">
             No live data yet. Start the loop from <code>pipelines/</code>:
             <code class="ml-1 rounded bg-white px-1">uv run --env-file ../.env python -m flightops live</code>
         </p>
         <p v-else-if="fresh.state === 'stale'" role="status" class="rounded border border-amber-400 bg-amber-50 p-3 text-sm">
-            Live loop not running: data is {{ fresh.minutes }} min old (last poll {{ localTime(status.states_loaded_at, ATL_TZ) }}).
+            Live updates have stopped: data is {{ fresh.minutes }} min old (last update {{ localTime(status.states_loaded_at, ATL_TZ) }}).
         </p>
         <p v-else role="status" class="text-sm text-slate-600">
-            Last poll {{ localTime(status.states_loaded_at, ATL_TZ) }} · {{ aircraft.length }} aircraft within about 90 nm
+            Last update {{ localTime(status.states_loaded_at, ATL_TZ) }} · {{ aircraft.length }} aircraft within about 90 nautical miles
         </p>
 
         <section aria-label="Weather" class="space-y-1 rounded border border-slate-200 bg-white p-3 text-sm">
-            <h2 class="font-semibold text-slate-700">Weather at ATL</h2>
-            <p v-if="!latest" class="text-slate-500">No METAR loaded yet.</p>
+            <h2 class="font-semibold text-slate-700">Weather at Atlanta: <Term k="metar" /> and <Term k="taf" /></h2>
+            <p v-if="!latest" class="text-slate-500">No weather report loaded yet.</p>
             <template v-else>
                 <p>
-                    <span class="mr-2 rounded px-1.5 py-0.5 text-xs" :class="latest.adverse ? 'bg-sky-700 text-white' : 'bg-sky-100'">{{ latest.adverse ? 'Adverse' : 'Not adverse' }}</span>
+                    <span class="mr-2 rounded px-1.5 py-0.5 text-xs" :class="latest.adverse ? 'bg-sky-700 text-white' : 'bg-sky-100'">{{ latest.adverse ? 'Bad weather' : 'No bad weather' }}</span>
                     <span v-if="latest.stale" class="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs">Over 90 min old</span>
                     {{ localTime(latest.observed_at, ATL_TZ) }} {{ latest.metar_type }}
                 </p>
@@ -60,9 +71,9 @@ const CAVEATS = [
             <table v-else class="w-full text-left text-sm">
                 <thead class="text-xs text-slate-500">
                     <tr>
-                        <th class="py-1 pr-3">Tail</th><th class="pr-3">Type</th><th class="pr-3">Operator</th><th class="pr-3">Callsign</th>
-                        <th class="pr-3 text-right">Distance</th><th class="pr-3 text-right">Bearing</th><th class="pr-3 text-right">Altitude</th>
-                        <th class="pr-3">Motion</th><th class="text-right">Position age</th>
+                        <th class="py-1 pr-3"><Term k="tail" label="Aircraft" /></th><th class="pr-3">Type</th><th class="pr-3">Airline</th><th class="pr-3"><Term k="callsign" label="Radio name" /></th>
+                        <th class="pr-3 text-right">Distance</th><th class="pr-3 text-right">Direction</th><th class="pr-3 text-right">Altitude</th>
+                        <th class="pr-3">Climbing or descending</th><th class="text-right">Position age</th>
                     </tr>
                 </thead>
                 <tbody>

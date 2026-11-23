@@ -20,7 +20,7 @@ const pad = (h) => String(h).padStart(2, '0');
 
 <template>
     <div class="overflow-x-auto">
-    <svg :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" class="w-full min-w-[640px]" role="img" aria-label="ATL departures and arrivals by local hour, with METARs below. The table that follows gives the same counts.">
+    <svg :viewBox="`0 0 ${WIDTH} ${HEIGHT}`" class="w-full min-w-[640px]" role="img" aria-label="ATL departures and arrivals by local hour, with weather reports below. The table that follows gives the same counts.">
         <g v-for="h in hours" :key="h.hour" :transform="`translate(${h.hour * COL},0)`" class="cursor-pointer" @click="emit('select-hour', selectedHour === h.hour ? null : h.hour)">
             <title>{{ pad(h.hour) }}:00 local · {{ total(h.dep) }} departures · {{ total(h.arr) }} arrivals</title>
             <rect :width="COL" :height="HALF * 2" :class="selectedHour === h.hour ? 'fill-slate-100 stroke-slate-400' : 'fill-transparent'" />
@@ -31,16 +31,16 @@ const pad = (h) => String(h).padStart(2, '0');
         <text x="4" y="12" class="fill-slate-500 text-[10px]">Departures ↑</text>
         <text x="4" :y="HALF * 2 - 4" class="fill-slate-500 text-[10px]">Arrivals ↓</text>
         <g v-for="m in metars" :key="`w${m.hour}`" :transform="`translate(${m.hour * COL},${HALF * 2 + 4})`">
-            <title>{{ m.reports.length ? m.reports.join('\n') : 'No METAR this hour' }}</title>
+            <title>{{ m.reports.length ? m.reports.join('\n') : 'No weather report this hour' }}</title>
             <rect :width="COL - 1" :height="STRIP" :class="m.adverse ? 'fill-sky-700' : m.reports.length ? 'fill-sky-100' : 'fill-slate-200'" />
         </g>
         <text v-for="h in hours" :key="`l${h.hour}`" :x="h.hour * COL + COL / 2" :y="HEIGHT - 4" text-anchor="middle" class="fill-slate-500 text-[10px]">{{ pad(h.hour) }}</text>
     </svg>
     </div>
     <table class="sr-only">
-        <caption>Flights by ATL local hour</caption>
+        <caption>Flights by Atlanta hour</caption>
         <thead>
-            <tr><th scope="col">Hour</th><th scope="col">Departures</th><th scope="col">Arrivals</th><th scope="col">Cancelled</th><th scope="col">Adverse METAR</th></tr>
+            <tr><th scope="col">Hour</th><th scope="col">Departures</th><th scope="col">Arrivals</th><th scope="col">Cancelled</th><th scope="col">Bad weather</th></tr>
         </thead>
         <tbody>
             <tr v-for="h in hours" :key="`s${h.hour}`">

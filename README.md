@@ -35,6 +35,12 @@ From the generated [Phase 6 report](docs/phase-6-report.md):
 
 ## The ops console
 
+**Start here.** The app opens on a welcome page that explains airline operations control in plain words, with a glossary of every term the console uses. A five-step tour walks through the July 19 outage: the hub's day, one aircraft's day, how its delay spreads, the chance its next flights are cancelled, and logging a decision. Every page also has a "How to read this page" box, and each industry term carries an ⓘ that explains it.
+
+![The welcome page and glossary](docs/screenshots/guide.png)
+
+![Tour step 3: a what-if delay puts the next flight at risk](docs/screenshots/tour-step-3.png)
+
 ![ATL on July 19, 2024](docs/screenshots/hub-2024-07-19.png)
 
 - **Pick a day, see the hub.** Departures and arrivals by local hour, split by status, over a strip of the METARs for the same hours. July 19 is a wall of cancellations under clear skies. July 10 is a normal day with storms.
@@ -107,7 +113,7 @@ cd web
 composer install && npm install
 cp .env.example .env && php artisan key:generate
 npm run build
-php artisan serve      # http://127.0.0.1:8000
+php artisan serve      # http://127.0.0.1:8000 opens the welcome page and tour
 ./vendor/bin/pest      # tests run against the loaded database
 ```
 

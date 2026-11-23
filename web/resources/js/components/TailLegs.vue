@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { CANCELLATION, delayText } from '../lib/flights.js';
+import { CANCELLATION, CAVEATS, delayText } from '../lib/flights.js';
 import { axis, bar, dayBand, dayMarks, gapLabel, hoursMinutes, lateText } from '../lib/legs.js';
 import { ATL_TZ, localDate, localTime, shortDate, utcTitle } from '../lib/time.js';
 
@@ -42,7 +42,7 @@ const place = (b) => ({ left: `${b.left}%`, width: `${b.width}%` });
                 <div class="space-y-1 text-sm">
                     <div class="font-medium">
                         {{ localDate(r.leg.sched_dep_utc, r.leg.origin_tz) }} ·
-                        <Link v-if="!r.leg.cancelled" :href="`/flights/${r.leg.flight_id}`" class="text-sky-700 underline" title="What a delay here puts at risk downstream">{{ r.leg.carrier }} {{ r.leg.flight_number }}</Link>
+                        <Link v-if="!r.leg.cancelled" :href="`/flights/${r.leg.flight_id}`" class="text-sky-700 underline" title="See which later flights a delay here puts at risk">{{ r.leg.carrier }} {{ r.leg.flight_number }}</Link>
                         <template v-else>{{ r.leg.carrier }} {{ r.leg.flight_number }}</template>
                         · {{ r.leg.origin }} → {{ r.leg.dest }}
                         <span v-if="r.leg.diverted" class="text-violet-700">(landed {{ r.leg.landed ?? '?' }})</span>
@@ -55,15 +55,15 @@ const place = (b) => ({ left: `${b.left}%`, width: `${b.width}%` });
                         <span class="text-xs text-slate-400">(local)</span>
                     </div>
                     <div class="flex flex-wrap gap-1">
-                        <span v-if="r.leg.cancelled" class="badge bg-red-100 text-red-800" :title="`BTS cancellation code ${r.leg.cancellation_code}`">Cancelled · {{ CANCELLATION[r.leg.cancellation_code] ?? r.leg.cancellation_code }} · unflown</span>
+                        <span v-if="r.leg.cancelled" class="badge bg-red-100 text-red-800" :title="`Cancellation reason code ${r.leg.cancellation_code}`">Cancelled · {{ CANCELLATION[r.leg.cancellation_code] ?? r.leg.cancellation_code }}</span>
                         <span v-else-if="r.late" class="badge bg-amber-100 text-amber-900">Late: {{ r.late }}</span>
-                        <span v-if="r.leg.leg_day !== day" class="badge bg-slate-100 text-slate-600">Outside this day · ATL date {{ shortDate(r.leg.leg_day) }}</span>
-                        <span v-if="r.leg.aircraft_link_confidence === 'medium'" class="badge bg-amber-50 text-amber-900">Medium-confidence aircraft</span>
-                        <span v-if="!r.leg.aircraft_id" class="badge bg-amber-50 text-amber-900">Aircraft not resolved</span>
+                        <span v-if="r.leg.leg_day !== day" class="badge bg-slate-100 text-slate-600">Outside this day · Atlanta date {{ shortDate(r.leg.leg_day) }}</span>
+                        <span v-if="r.leg.aircraft_link_confidence === 'medium'" class="badge bg-amber-50 text-amber-900">{{ CAVEATS.aircraft_medium_confidence }}</span>
+                        <span v-if="!r.leg.aircraft_id" class="badge bg-amber-50 text-amber-900">{{ CAVEATS.aircraft_unresolved }}</span>
                     </div>
                     <div v-if="delayText(r.leg.delays)" class="text-slate-600">Delay causes: {{ delayText(r.leg.delays) }}</div>
                     <details v-if="r.leg.metar_raw_text" class="text-xs text-slate-500">
-                        <summary class="cursor-pointer">ATL METAR, {{ r.leg.metar_staleness_min }} min old<template v-if="r.leg.metar_adverse"> · adverse</template></summary>
+                        <summary class="cursor-pointer">Atlanta weather report (METAR), {{ r.leg.metar_staleness_min }} min old<template v-if="r.leg.metar_adverse"> · bad weather</template></summary>
                         <code class="break-words">{{ r.leg.metar_raw_text }}</code>
                     </details>
                 </div>

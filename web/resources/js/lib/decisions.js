@@ -35,7 +35,7 @@ export function targetLabel(leg) {
 }
 
 export const HINDSIGHT =
-    'Decisions are logged with the July 2024 outcome already visible on the flight page, so this is an audit trail, not a test of foresight. BTS records only the tail that flew, so a swap can never be confirmed.';
+    'Decisions are logged with the July 2024 outcome already visible on the flight page, so this is an audit trail, not a test of foresight. US flight records (BTS) list only the aircraft that flew, so a swap can never be confirmed.';
 
 // The target's match label, or the chain totals when the decision has no target
 export function outcome(d) {

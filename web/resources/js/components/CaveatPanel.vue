@@ -8,7 +8,7 @@ const present = () => Object.keys(CAVEATS).filter((k) => props.caveats?.[k]);
 
 <template>
     <section aria-labelledby="caveats-heading">
-        <h2 id="caveats-heading" class="text-sm font-semibold text-slate-700">Data caveats for this day</h2>
+        <h2 id="caveats-heading" class="text-sm font-semibold text-slate-700">Data warnings for this day</h2>
         <p v-if="!present().length" class="text-sm text-slate-500">None.</p>
         <ul v-else class="mt-1 flex flex-wrap gap-2">
             <li v-for="key in present()" :key="key">

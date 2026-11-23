@@ -31,7 +31,7 @@ const field = 'rounded border border-slate-300 bg-white px-1 py-0.5';
                     <option v-for="(label, value) in ACTIONS" :key="value" :value="value">{{ label }}</option>
                 </select>
             </label>
-            <label v-if="form.action !== 'accept_delay'" class="flex flex-col gap-1">Target leg (optional)
+            <label v-if="form.action !== 'accept_delay'" class="flex flex-col gap-1">Which flight (optional)
                 <select v-model="form.target" :class="field">
                     <option :value="null">None</option>
                     <option v-for="l in legs" :key="`${l.kind}-${l.flight_id}`" :value="l.flight_id">{{ targetLabel(l) }}</option>

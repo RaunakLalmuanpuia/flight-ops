@@ -23,7 +23,7 @@ test('lists the caveats a flight carries', () => {
 });
 
 test('reads delay causes from the jsonb text', () => {
-    assert.equal(delayText('{"carrier": 10, "late_aircraft": 20}'), 'carrier 10, late aircraft 20');
+    assert.equal(delayText('{"carrier": 10, "late_aircraft": 20}'), 'airline 10, late inbound aircraft 20');
     assert.equal(delayText(null), '');
 });
 
@@ -34,7 +34,8 @@ test('orders by scheduled ATL time, flight_id breaking ties', () => {
     assert.deepEqual(byAtlTime([d1, d2, a]), [a, d2, d1]);
 });
 
-test('names the BTS cancellation codes', () => {
-    assert.equal(CANCELLATION.A, 'carrier');
+test('names the cancellation reason codes in plain words', () => {
+    assert.equal(CANCELLATION.A, 'airline');
     assert.equal(CANCELLATION.B, 'weather');
+    assert.equal(CANCELLATION.C, 'air traffic system');
 });

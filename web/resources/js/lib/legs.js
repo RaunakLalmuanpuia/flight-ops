@@ -1,9 +1,9 @@
 import { shiftDay, toDate, zonedMidnight } from './time.js';
 
 export const REASONS = {
-    no_faa_record: 'no FAA registration found for this tail',
+    no_faa_record: 'no US registration found for this aircraft',
     ambiguous_window: 'more than one registration covers the date',
-    no_window_multiple_airframes: 'no registration covers the date, and the tail has had several airframes',
+    no_window_multiple_airframes: 'no registration covers the date, and the registration has been on several aircraft',
 };
 
 export function axis(legs) {
@@ -25,7 +25,7 @@ export function bar(from, to, { start, end }) {
 
 export function gapLabel(leg) {
     if (leg.connects !== false) return null;
-    return `Next origin ${leg.origin} ≠ previous arrival ${leg.prev_station}: ${leg.break_label}`;
+    return `Starts at ${leg.origin} but last landed at ${leg.prev_station}: ${leg.break_label}`;
 }
 
 export function hoursMinutes(minutes) {
@@ -59,5 +59,5 @@ export function lateText(leg) {
     const dep = leg.dep_delay_min;
     const arr = leg.arr_delay_min;
     if (!(dep >= 15 || arr >= 15)) return null;
-    return [dep != null && `dep ${signed(dep)} min`, arr != null && `arr ${signed(arr)} min`].filter(Boolean).join(' · ');
+    return [dep != null && `left ${signed(dep)} min`, arr != null && `landed ${signed(arr)} min`].filter(Boolean).join(' · ');
 }
