@@ -277,3 +277,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** one August holdout, and a window chosen by a rule rather than by storm track. Single storm days later in August (9, 18-19, 29-30) stay in `august`.
 - **Why:** it is a weather disruption beside July's IT outage, and scoring it separately shows whether a model fitted on July holds up on a different kind of bad day. It is mild: at worst 6.8% of ATL flights were cancelled, against 43% on July 19.
 - **Revisit if:** a later month has a disruption on the outage's scale. Then that month, not Debby, tests the high-stress cells.
+
+## 2026-11-23: Choose the min-turn percentile on July and score it on August
+- **Chose:** p10, the lowest depth-1 `late_aircraft` error on July's normal days (13.0 min, against 13.2 at p5, 14.7 at p25 and 20.4 at p50), with p5 added to the grid. `min_turn` is measured on July only.
+- **Gave up:** nothing changes in the app.
+- **Why:** choosing and scoring on the same month made phase 3's numbers in-sample. On August the model's depth-1 error is 13.2 min, against 46.5 for predict-0 and 35.6 for carry; on the Debby days (Aug 2-6) it is 13.8, against 49.4 and 43.4.
+- **Revisit if:** never, unless a later month disagrees.
