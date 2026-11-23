@@ -1,6 +1,6 @@
 <script setup>
 import { watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { ATL_TZ, localDate, localTime } from '../lib/time.js';
 import { ACTIONS, rememberAuthor, rememberedAuthor, targetLabel } from '../lib/decisions.js';
 
@@ -54,7 +54,7 @@ const field = 'rounded border border-slate-300 bg-white px-1 py-0.5';
             <h3 class="font-semibold">Earlier decisions on this flight</h3>
             <ul class="divide-y divide-slate-100">
                 <li v-for="d in decisions" :key="d.decision_id" class="py-1">
-                    {{ recorded(d) }} · {{ d.author }} · {{ ACTIONS[d.action] }}<template v-if="d.target_flight_number">: {{ d.target_carrier }} {{ d.target_flight_number }} {{ d.target_origin }} → {{ d.target_dest }}</template><template v-if="d.match_label"> · {{ d.match_label }}</template>
+                    <Link :href="`/decisions/${d.decision_id}`" class="text-sky-700 underline">{{ recorded(d) }}</Link> · {{ d.author }} · {{ ACTIONS[d.action] }}<template v-if="d.target_flight_number">: {{ d.target_carrier }} {{ d.target_flight_number }} {{ d.target_origin }} → {{ d.target_dest }}</template><template v-if="d.match_label"> · {{ d.match_label }}</template>
                 </li>
             </ul>
         </div>

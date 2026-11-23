@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIONS, rememberAuthor, rememberedAuthor, targetLabel } from './decisions.js';
+import { ACTIONS, HINDSIGHT, outcome, rememberAuthor, rememberedAuthor, targetLabel } from './decisions.js';
 
 test('actions match the database check constraint, in order', () => {
     assert.deepEqual(Object.keys(ACTIONS), ['accept_delay', 'hold_departure', 'swap_aircraft', 'cancel_leg', 'other']);
@@ -29,4 +29,17 @@ test('a target is labelled with its depth, route and local departure', () => {
     const leg = { depth: 2, kind: 'flown', carrier: 'DL', flight_number: '2590', origin: 'ATL', dest: 'BWI', sched_dep_utc: '2024-07-20 02:50:00+00', origin_tz: 'America/New_York' };
     assert.equal(targetLabel(leg), '2 · DL 2590 ATL → BWI · Jul 19 22:50');
     assert.equal(targetLabel({ ...leg, kind: 'cancelled' }), '2 · DL 2590 ATL → BWI · Jul 19 22:50 · cancelled');
+});
+
+test('outcome is the match label, or the chain totals without a target', () => {
+    assert.equal(outcome({ match_label: 'airline did the same' }), 'airline did the same');
+    assert.equal(
+        outcome({ match_label: null, predicted_at_risk: 0, actually_late: 1, cancelled: 3 }),
+        '0 predicted at risk · 1 left 15+ min late · 3 cancelled',
+    );
+});
+
+test('the hindsight caveat names both limits', () => {
+    assert.match(HINDSIGHT, /not a test of foresight/);
+    assert.match(HINDSIGHT, /swap can never be confirmed/);
 });

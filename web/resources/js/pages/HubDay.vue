@@ -21,6 +21,7 @@ const LEGEND = [
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">ATL · {{ day }} <span class="text-sm font-normal text-slate-500">(Atlanta local time)</span></h1>
             <Link href="/live" class="text-sm text-sky-700 underline">ATL live →</Link>
+            <Link href="/decisions" class="text-sm text-sky-700 underline">Decisions →</Link>
             <DayNav :day="day" :range="range" base="/day" />
         </header>
 
