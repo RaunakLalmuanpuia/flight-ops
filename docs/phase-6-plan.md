@@ -14,12 +14,13 @@ Reasoning behind these choices goes in `DECISIONS.md` as each is built. Out of s
 
 Only July is loaded, and the outage is inside it, so August comes first.
 
-- **Load:** BTS August 2024, IEM weather through September 2 UTC, and OpenSky ATL for August, through the existing loaders. `sources/registry.py`'s BTS glob and weather span become a list of months.
+- **Load:** BTS August 2024 and IEM weather from August 2 to September 2 UTC, through the existing loaders, as new entries in `sources/registry.py`. `staging.current_delivery` is keyed by source file, so a second month adds rather than replaces. OpenSky August is left out, because nothing in this phase reads it and it costs 1,860 credits.
 - **Periods:** `july_normal`, `july_outage` (flight date July 19-23) and `august`. If ATL cancellations by day show Hurricane Debby in early August, a `debby` period is added with a window taken from those counts. If they don't, there is no `debby` period and the report says so. This is decided after loading, not assumed.
 - **Phase 3 re-score:** `min_turn` is measured on July only. The percentile grid gains p5 (p10 sat at the edge) and is chosen on `july_normal` depth-1 `late_aircraft` error. `propagation_backtest` is scored on both months, and the report's headline numbers come from `august`. If p5 wins, a migration changes `propagate`'s default.
-- **Places that assume July:** `rotations/backtest.sql` and `report.py` (outage window, period labels), `dq/checks.py` (the July 19-23 check stays July-scoped), and `web/app/Support/Days.php` (range becomes July 1 to August 31). The phase 1 report stays scoped to July.
+- **Places that assume July:** `rotations/backtest.sql`, `rotations/min_turn.sql` and `report.py` (outage window, period labels), all replaced by one `ontology.period(flight_date)` function (migration 023). `dq/checks.py`'s July 19-23 check stays July-scoped. The app's day range comes from `app_read.day_range`, so it extends to August 31 by itself.
+- **Whole-database figures move:** `touched_atl` is computed over all loaded flights, so a tail that touched ATL only in August now counts in July too, and the phase 1 report's whole-database tables (checks, tail matching, rotation breaks, weather join) cover both months. The phase 1 report becomes a report on all loaded data, and its date-scoped tables keep their July dates.
 - **Rechecks:** Pest's July assertions, the decision log's natural key across both months, and every figure in `docs/case-study.md` and `docs/phase-3-report.md`.
-- **Deferred thresholds:** set the reported checks' thresholds from the two months, as "Hold off on thresholds for reported checks" asked.
+- **Thresholds stay deferred:** reported checks are whole-database totals, so two months give one value each, not two to compare. Setting thresholds needs per-month checks, which nothing in this phase uses.
 
 ## Step 2: the rate table and its backtest
 
@@ -61,7 +62,7 @@ A new generated section in `report.py`, tables with their SQL under each as befo
 - **N102DN worked example:** the three cancelled gap legs and ATL→BWI, each with its rate and basis.
 - **Limits:** July's high-stress cells are fitted on a single outage. If August has no comparable disruption, those cells are untested out of sample, and the report says that instead of claiming otherwise.
 
-## Step 3: `propagate` and the decision log (migration 023)
+## Step 3: `propagate` and the decision log (next free migration)
 
 - **`propagate` gains `cancel_risk` (numeric) and `cancel_risk_basis` (text).** Rows are scored by schedule rank after the selected flight, not by `propagate`'s depth, since N102DN's three cancelled legs all come back at depth 1. Ranks 1-3 within 24h get a rate, the rest are NULL. A what-if delay changes only the delay bucket. Stress always comes from the inbound's actual departure. A diverted start gets NULL, with basis `not scored: diverted`.
 - **New output columns mean `DROP FUNCTION` and re-create.** Grants are reapplied in the same migration. `record_decision` is plpgsql, so it doesn't block the drop. Its tests catch the change.
@@ -79,7 +80,7 @@ A new generated section in `report.py`, tables with their SQL under each as befo
 
 - **pytest fixtures:** stress excludes the own tail. A cancellation counts only from its scheduled departure. Ranks follow the schedule, not the flown chain. The 24h cut. The fallback under 200 samples. Delay buckets at their edges, including early arrivals.
 - **`propagate`:** an N102DN-shaped fixture, with three cancelled gap legs scored at ranks 1-3 and the flown leg after them unscored. What-if changes the bucket. A diverted start returns NULL.
-- **`record_decision`:** the snapshot carries the new columns, and decisions logged before migration 023 survive it with NULLs.
+- **`record_decision`:** the snapshot carries the new columns, and decisions logged before that migration survive it with NULLs.
 - **Pest:** the cancel-risk column on a real July 19 flight, and the decision page showing frozen risk and the pre-phase label.
 - Report numbers are generated, not asserted.
 
