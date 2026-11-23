@@ -25,5 +25,7 @@ def build(conn) -> None:
     run_sql(conn, "rotations/rotations.sql")
     run_sql(conn, "rotations/min_turn.sql")
     run_sql(conn, "rotations/backtest.sql")
+    run_sql(conn, "rotations/cancel_rate.sql")
+    run_sql(conn, "rotations/cancel_backtest.sql")
     run_sql(conn, "resolve/flight_weather.sql")
     checks.run(conn, "reported")

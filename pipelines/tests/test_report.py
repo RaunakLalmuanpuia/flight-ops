@@ -90,3 +90,28 @@ def test_phase3_min_turn_shows_p5(backtested):
 def test_report_percentile_is_propagates_default(conn):
     args = conn.execute("select pg_get_function_arguments('app_read.propagate'::regproc)").fetchone()[0]
     assert args.endswith(f"p_percentile integer DEFAULT {report.PERCENTILE}")
+
+
+@pytest.fixture
+def cancel_scored(conn, load_fixture):
+    load_fixture("ourairports_airports", "airports.csv")
+    load_fixture("bts_ontime", "bts_cancel.csv")
+    pipeline.build(conn)
+    return conn
+
+
+def phase6(conn):
+    return report.render(conn, *report.REPORTS["phase-6-report.md"])
+
+
+def test_phase6_every_section_runs_and_has_a_heading(cancel_scored):
+    text = phase6(cancel_scored)
+    for heading, _, _ in report.P6_SECTIONS:
+        assert f"## {heading}" in text
+    assert "None" not in text
+
+
+def test_phase6_threshold_maximizes_july_f1(cancel_scored):
+    # July predictions: 1.0 x3 (all cancelled), 0.5 x2 (one cancelled), 0.0 x2 (none); 4 cancelled in all.
+    # Flagging at 0.5 catches 4 of 5 flagged and all 4 cancelled: F1 8/9, above 6/7 at 1.0 and 8/11 at 0.0.
+    assert "| 50.0 | 5 | 4 | 80.0 | 100.0 | 0.889 |" in phase6(cancel_scored)
