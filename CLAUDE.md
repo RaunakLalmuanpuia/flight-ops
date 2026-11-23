@@ -4,8 +4,8 @@ Airline operations control tool for one US hub, starting with ATL. It is a portf
 
 ## Status
 
-- **Current phase:** 4 complete: `python -m flightops live` (migration 020) fills `ontology.live_*`, and the `/live` page reads `app_read.live_*` (021). Measured rates are in the notes of `docs/phase-4-plan.md`.
-- **Next action:** ask the user whether to brainstorm the cancellation-risk phase the case study recommends, or phase 5 (operator workflow). Either needs `superpowers:brainstorming`, since neither has a plan file.
+- **Current phase:** 5 (operator workflow), design written in `docs/phase-5-plan.md` and awaiting the user's review. Phase 4 is complete (migrations 020-021).
+- **Next action:** once the user approves `docs/phase-5-plan.md`, write the step 1 plan (migration 022 and its tests) with `superpowers:writing-plans` under `docs/plans/`.
 - **Built so far:** phases 1 to 4 in full (see their plans in `docs/`): the pipelines, the `app_read` views read by the `flightops_app` role, and the read-only ops console in `web/` (HubDay, TailDay, FlightImpact and Live pages). The local `flightops` database holds the July 2024 ontology, and measured results are in `docs/data-sources.md` and the notes in `docs/phase-2-plan.md`. OpenSky ATL arrivals and departures are collected by hand with `collect`, which fetches the last 7 settled days it doesn't hold. Use `--from` and `--to` for older gaps.
 - **Commands:** from `pipelines/`, `uv run --env-file ../.env pytest`, and `uv run --env-file ../.env python -m flightops {migrate,ddl,fetch,load,build,report,all,collect,live}`. `live` polls every 60 s (`--every`) until Ctrl-C. From `web/`, `./vendor/bin/pest`, `npm test`, `npm run build`, and `composer run dev` or `php artisan serve` to run the app.
 - **Repo:** phase 1, OpenSky collection and the report addition are merged to `main` locally, not pushed, and so are all of phases 2, 3 and 4.
