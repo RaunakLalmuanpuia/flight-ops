@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import Term from '../components/Term.vue';
 import PageHelp from '../components/PageHelp.vue';
 import TourBar from '../components/TourBar.vue';
 import DayNav from '../components/DayNav.vue';
@@ -28,16 +29,16 @@ defineProps({ tail: String, day: String, range: Object, aircraft: Array, legs: A
         </PageHelp>
 
         <section aria-label="Aircraft" class="text-sm">
-            <p v-if="!aircraft.length" class="text-slate-500">No flights for this tail on this day.</p>
+            <p v-if="!aircraft.length" class="text-slate-500">No flights for this aircraft on this day.</p>
             <p v-for="(a, i) in aircraft" :key="i">
-                <template v-if="a.confidence">{{ a.manufacturer }} {{ a.model }} · {{ a.confidence }} confidence ({{ a.method }}) · {{ a.flights }} flights in July</template>
-                <template v-else>Aircraft not resolved: {{ REASONS[a.unresolved_reason] ?? a.unresolved_reason ?? 'no reason recorded' }} · {{ a.flights }} flights</template>
+                <template v-if="a.confidence">{{ a.manufacturer }} {{ a.model }} · {{ a.confidence }} <Term k="aircraft_medium_confidence" label="match confidence" /> ({{ a.method }}) · {{ a.flights }} flights in July</template>
+                <template v-else>Aircraft not identified: {{ REASONS[a.unresolved_reason] ?? a.unresolved_reason ?? 'no reason recorded' }} · {{ a.flights }} flights</template>
             </p>
         </section>
 
-        <p class="text-xs text-slate-500">Grey bar: scheduled. Dark bar: actual (amber when 15+ minutes late). The shaded band is this day in Atlanta time. A leg belongs to the ATL date of its scheduled departure. Row dates are local at the origin. Faded rows are the legs either side of this day.</p>
+        <p class="text-xs text-slate-500">Grey bar: planned. Dark bar: actual (amber when 15+ minutes late). The shaded band is this day in Atlanta time. A flight belongs to the Atlanta date of its scheduled departure. Row dates are local at the departure airport. Faded rows are the flights either side of this day. This is the aircraft's <Term k="rotation" />.</p>
 
         <TailLegs v-if="legs.length" :legs="legs" :day="day" />
-        <p v-else class="text-slate-500">No legs on this day.</p>
+        <p v-else class="text-slate-500">No flights on this day.</p>
     </main>
 </template>
