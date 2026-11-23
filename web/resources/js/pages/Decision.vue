@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import Term from '../components/Term.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PageHelp from '../components/PageHelp.vue';
 import TourBar from '../components/TourBar.vue';
@@ -29,7 +30,7 @@ const cell = 'px-2 py-1';
                 <template v-if="d.what_if">Logged against a {{ d.arr_delay_min }}-min what-if arrival delay.</template>
                 <template v-else-if="d.arr_delay_min !== null">Logged against the actual {{ d.arr_delay_min }}-min arrival delay.</template>
                 <template v-else>Logged against the actual landing of a diversion.</template>
-                Min turn at p{{ d.percentile }}.
+                Minimum turnaround set at the {{ d.percentile }}th percentile of July turnarounds.
             </p>
             <Link v-if="d.flight_found" :href="flightHref" class="text-sm text-sky-700 underline">Open the flight's impact page →</Link>
         </header>
@@ -47,19 +48,19 @@ const cell = 'px-2 py-1';
             <p v-else-if="!d.flight_found">{{ outcome(d) }}.</p>
             <p>
                 Chain: {{ d.predicted_at_risk }} predicted at risk · {{ d.actually_late }} left 15+ min late · {{ d.cancelled }} cancelled
-                · <template v-if="d.cancel_risk_recorded">{{ d.flagged_cancel_risk }} flagged at cancellation risk</template><template v-else>recorded before cancellation risk</template>.
+                · <template v-if="d.cancel_risk_recorded">{{ d.flagged_cancel_risk }} flagged high chance of cancellation</template><template v-else>logged before the cancellation score existed</template>.
             </p>
         </section>
 
         <p class="text-xs text-slate-500">{{ HINDSIGHT }}</p>
-        <p class="text-xs text-slate-500">{{ CANCEL_RISK_CAVEAT }} Risks here are frozen as the decision saw them; the badge uses today's threshold.</p>
+        <p class="text-xs text-slate-500">{{ CANCEL_RISK_CAVEAT }} Risks here are kept as the decision saw them. The badge uses today's threshold.</p>
 
         <div class="overflow-x-auto rounded border border-slate-200 bg-white">
             <table class="w-full whitespace-nowrap text-left text-sm">
                 <thead class="bg-slate-100 text-xs uppercase text-slate-600">
                     <tr>
-                        <th :class="cell">Leg</th><th :class="cell">Flight</th><th :class="cell">Route</th><th :class="cell">Sched dep (local)</th>
-                        <th :class="cell">Predicted dep delay (frozen)</th><th :class="cell">Cancel risk (frozen)</th><th :class="cell">Actual dep delay</th>
+                        <th :class="cell">Order</th><th :class="cell">Flight</th><th :class="cell">Route</th><th :class="cell">Scheduled departure (local)</th>
+                        <th :class="cell">Predicted departure delay (as decided)</th><th :class="cell"><Term k="cancel_risk" label="Chance of cancellation" /> (as decided)</th><th :class="cell">Actual departure delay</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,23 +71,23 @@ const cell = 'px-2 py-1';
                         <td :class="cell" :title="utcTitle(l.sched_dep_utc)">{{ sched(l) }}</td>
                         <td :class="cell">
                             <template v-if="l.kind === 'selected'">decided on</template>
-                            <template v-else-if="l.kind === 'cancelled'">cancelled in the gap, not predicted</template>
-                            <template v-else-if="l.kind === 'scheduled'">outside the chain, not predicted</template>
+                            <template v-else-if="l.kind === 'cancelled'">cancelled that day, not predicted</template>
+                            <template v-else-if="l.kind === 'scheduled'">outside the delay chain, not predicted</template>
                             <span v-else-if="l.at_risk" class="badge bg-amber-100 text-amber-900">{{ l.predicted_dep_delay }} min · at risk</span>
                             <template v-else-if="l.predicted_dep_delay !== null">{{ l.predicted_dep_delay }} min</template>
                             <span v-else class="text-slate-500">not predicted ({{ l.stop_reason }})</span>
                         </td>
                         <td :class="cell">
                             <template v-if="l.kind === 'selected'">—</template>
-                            <span v-else-if="!d.cancel_risk_recorded" class="text-slate-500">recorded before cancellation risk</span>
+                            <span v-else-if="!d.cancel_risk_recorded" class="text-slate-500">logged before this score existed</span>
                             <template v-else>
-                                <span v-if="risk(l).flagged" class="badge bg-red-100 text-red-800">{{ risk(l).text }} · cancel risk</span>
+                                <span v-if="risk(l).flagged" class="badge bg-red-100 text-red-800">{{ risk(l).text }} · high</span>
                                 <span v-else :class="!risk(l).basis && 'text-slate-500'">{{ risk(l).text }}</span>
                                 <div v-if="risk(l).basis" class="text-xs text-slate-500">{{ risk(l).basis }}</div>
                             </template>
                         </td>
                         <td :class="cell">
-                            <template v-if="l.current_flight_id === null">flight not found after rebuild</template>
+                            <template v-if="l.current_flight_id === null">flight not found after the data was rebuilt</template>
                             <template v-else-if="l.actual_cancelled">cancelled</template>
                             <template v-else>{{ minutes(l.actual_dep_delay) }}</template>
                         </td>

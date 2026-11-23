@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import Term from '../components/Term.vue';
 import PageHelp from '../components/PageHelp.vue';
 import TourBar from '../components/TourBar.vue';
 import { ATL_TZ, localDate, localTime, utcTitle } from '../lib/time.js';
@@ -27,13 +28,13 @@ const cell = 'px-2 py-1';
         </PageHelp>
         <p class="text-xs text-slate-500">{{ HINDSIGHT }}</p>
 
-        <p v-if="!decisions.length" class="text-slate-500">No decisions yet. Log one from any flight's impact page.</p>
+        <p v-if="!decisions.length" class="text-slate-500">No decisions yet. Log one from the bottom of any flight's delay chain page.</p>
         <div v-else class="overflow-x-auto rounded border border-slate-200 bg-white">
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-100 text-xs uppercase text-slate-600">
                     <tr>
-                        <th :class="cell">Logged (Atlanta)</th><th :class="cell">Author</th><th :class="cell">Flight</th>
-                        <th :class="cell">Action</th><th :class="cell">Target</th><th :class="cell">Outcome</th><th :class="cell">Cancel risk</th>
+                        <th :class="cell">Logged (Atlanta time)</th><th :class="cell">Author</th><th :class="cell">Flight</th>
+                        <th :class="cell">Action</th><th :class="cell">Which flight</th><th :class="cell">Outcome</th><th :class="cell"><Term k="cancel_risk" label="Chance of cancellation" /></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,8 +53,8 @@ const cell = 'px-2 py-1';
                         </td>
                         <td :class="cell">{{ outcome(d) }}</td>
                         <td :class="cell">
-                            <template v-if="d.cancel_risk_recorded">{{ d.flagged_cancel_risk }} flagged</template>
-                            <span v-else class="text-slate-500">recorded before cancellation risk</span>
+                            <template v-if="d.cancel_risk_recorded">{{ d.flagged_cancel_risk }} flagged high</template>
+                            <span v-else class="text-slate-500">logged before this score existed</span>
                         </td>
                     </tr>
                 </tbody>
