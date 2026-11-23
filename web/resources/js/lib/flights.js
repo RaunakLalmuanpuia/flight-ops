@@ -6,7 +6,7 @@ export const CAVEATS = Object.fromEntries(
     ['metar_stale', 'rotation_break', 'aircraft_unresolved', 'aircraft_medium_confidence', 'block_mismatch', 'no_tail'].map((k) => [k, GLOSSARY[k].plain]),
 );
 
-const CAUSES = { carrier: 'carrier', weather: 'weather', nas: 'NAS', security: 'security', late_aircraft: 'late aircraft' };
+const CAUSES = { carrier: 'airline', weather: 'weather', nas: 'air traffic system', security: 'security', late_aircraft: 'late inbound aircraft' };
 
 // The times and delay at ATL: departures leave ATL, arrivals land there.
 export function atlEvent(f) {
@@ -38,7 +38,7 @@ export function delayText(delays) {
         .join(', ');
 }
 
-export const CANCELLATION = { A: 'carrier', B: 'weather', C: 'NAS', D: 'security' };
+export const CANCELLATION = { A: 'airline', B: 'weather', C: 'air traffic system', D: 'security' };
 
 // Scheduled ATL time order; flight_id breaks ties so the order is stable.
 export function byAtlTime(flights) {

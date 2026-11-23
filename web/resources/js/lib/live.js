@@ -4,11 +4,11 @@ export const STALE_AFTER_MIN = 5; // the loop polls every 60 s, so 5 minutes mea
 const LEVEL_FPM = 300; // under this either way, call it level
 
 export const LIVE_REASONS = {
-    'hex not in FAA registry': 'Not in the FAA registry (foreign or military)',
-    'ambiguous hex': 'Hex on more than one FAA registration',
-    'general aviation callsign': 'Flying under its tail number',
-    'unknown prefix': 'Callsign prefix not in our operator list',
-    'no callsign': 'No callsign broadcast',
+    'hex not in FAA registry': 'Not in the US aircraft register (foreign or military)',
+    'ambiguous hex': 'Transponder code matches more than one US registration',
+    'general aviation callsign': 'Private flight, using its registration as its radio name',
+    'unknown prefix': 'Radio name (callsign) not from a known airline',
+    'no callsign': 'No radio name (callsign) broadcast',
 };
 
 export function freshness(loadedAt, now) {

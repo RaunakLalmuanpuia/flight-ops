@@ -22,7 +22,7 @@ test('a gap label appears only where the rotation breaks', () => {
     assert.equal(gapLabel({ connects: null }), null);
     assert.equal(
         gapLabel({ connects: false, origin: 'LGA', prev_station: 'ATL', break_label: 'Likely flew legs BTS does not report' }),
-        'Next origin LGA ≠ previous arrival ATL: Likely flew legs BTS does not report',
+        'Starts at LGA but last landed at ATL: Likely flew legs BTS does not report',
     );
 });
 
@@ -53,10 +53,10 @@ test('day band covers the local day, clamped to the span', () => {
 });
 
 test('late text names the delayed parts, and is null on time', () => {
-    assert.equal(lateText({ dep_delay_min: 31, arr_delay_min: 9 }), 'dep +31 min · arr +9 min');
-    assert.equal(lateText({ dep_delay_min: 316, arr_delay_min: 316 }), 'dep +316 min · arr +316 min');
-    assert.equal(lateText({ dep_delay_min: null, arr_delay_min: 20 }), 'arr +20 min');
-    assert.equal(lateText({ dep_delay_min: -5, arr_delay_min: 29 }), 'dep -5 min · arr +29 min');
+    assert.equal(lateText({ dep_delay_min: 31, arr_delay_min: 9 }), 'left +31 min · landed +9 min');
+    assert.equal(lateText({ dep_delay_min: 316, arr_delay_min: 316 }), 'left +316 min · landed +316 min');
+    assert.equal(lateText({ dep_delay_min: null, arr_delay_min: 20 }), 'landed +20 min');
+    assert.equal(lateText({ dep_delay_min: -5, arr_delay_min: 29 }), 'left -5 min · landed +29 min');
     assert.equal(lateText({ dep_delay_min: 5, arr_delay_min: 14 }), null);
     assert.equal(lateText({ dep_delay_min: null, arr_delay_min: null }), null);
 });
