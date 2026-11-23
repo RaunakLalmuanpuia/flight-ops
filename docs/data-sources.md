@@ -62,7 +62,7 @@ Every file is UTF-8 with a header row. Column names in `raw` are the source head
 - **Obtained:** scripted. Both files cover August 2 to September 1 UTC (IEM's end date is exclusive), so they never overlap the July files, as `staging.metar`'s primary key requires.
 - `raw.iem_metar` gains 9,642 rows (SHA-256 `bd4faf29635837e553d68ff26991cb2d722c65a11d0505b2f6c097ac79a0aa5d`), `raw.iem_taf` 1,712 rows (SHA-256 `1b10acd9f1c31820be9cd73d4f3278abcc7b41cbe46809f2b97c7ee9ca0ad513`).
 
-## Measured July 2024 build
+## Measured July 2024 build (before August was loaded)
 
 From `python -m flightops all`. A second `build` gave identical hashes of `ontology.flight` and `ontology.rotation_leg`. All six blocking checks pass.
 

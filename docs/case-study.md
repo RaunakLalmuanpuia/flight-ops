@@ -65,7 +65,7 @@ The other limits are stated in the [phase 3 report](phase-3-report.md#limits):
 
 - **Aircraft only.** BTS has no crew or passenger connections. The model undercounts departure delay by [13.7 minutes in August, 17.4 on normal July days and 33.8 in the outage](phase-3-report.md#departure-delay-against-baselines), the gap that other causes fill.
 - **Fit on July, scored on August.** The turns and the percentile come from July and are scored on August, where the first-leg error is [13.2 minutes](phase-3-report.md#late-aircraft-minutes-against-baselines) against 13.0 in sample. Debby (Aug 2-6) is a second, [milder disruption](../DECISIONS.md#2026-11-23-treat-august-2-6-as-a-separate-period-debby): at worst 6.8% of ATL flights were cancelled, against 43% on July 19. The outage is inside the fit month, so its scores are not out of sample.
-- **Shorter turns score worse.** [p5](phase-3-report.md#percentile-choice) was tested and scored [13.2 minutes](phase-3-report.md#late-aircraft-minutes-against-baselines) on July's normal days, against 13.0 at p10, even though p10 still overpredicts the first leg by 5.0 minutes on average.
+- **Shorter turns score worse.** [p5](phase-3-report.md#percentile-choice) was tested and scored [13.2 minutes](phase-3-report.md#percentile-choice) on July's normal days, against 13.0 at p10, even though p10 still overpredicts the first leg by 5.0 minutes on average.
 - **Hindsight in the chain.** The model follows the order the aircraft actually flew, which a controller wouldn't know in advance. It matters little here: [248 of 190,834](phase-3-report.md#what-the-model-misses) scored pairs in August involve a swap.
 
 ## What I'd do next

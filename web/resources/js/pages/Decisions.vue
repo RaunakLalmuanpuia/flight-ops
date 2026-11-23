@@ -13,7 +13,7 @@ const cell = 'px-2 py-1';
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">Decision log</h1>
-            <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July 2024 history →</Link>
+            <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July–August 2024 history →</Link>
         </header>
         <p class="text-xs text-slate-500">{{ HINDSIGHT }}</p>
 

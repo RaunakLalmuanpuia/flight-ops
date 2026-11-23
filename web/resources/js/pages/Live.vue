@@ -20,7 +20,7 @@ const CAVEATS = [
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">ATL · live <span class="text-sm font-normal text-slate-500">(Atlanta local time)</span></h1>
-            <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July 2024 history →</Link>
+            <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July–August 2024 history →</Link>
         </header>
 
         <p v-if="fresh.state === 'never'" role="status" class="rounded border border-slate-300 bg-slate-50 p-3 text-sm">

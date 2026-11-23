@@ -254,6 +254,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** referential integrity, and fixing a typo in place.
 - **Why:** `build` truncates `ontology.flight` with `RESTART IDENTITY`. A foreign key would block that or cascade into the log, and stored ids would point at different flights afterwards. The natural key is unique across all 634,613 July flights.
 - **Revisit if:** a second month makes the natural key collide, or operators need to amend decisions, which would call for an amendment table rather than edits.
+- **Checked:** 2026-11-23, unique across all 1,253,638 July and August flights (docs/phase-6-plan.md notes).
 
 ## 2026-11-23: Type the author on each decision, with no login
 - **Chose:** a required name field on the decision form, remembered in the browser's `localStorage`. No accounts.
