@@ -49,8 +49,8 @@ def test_what_if_delay_is_frozen_with_its_chain(built):
     d = record(built, "101", delay=0)
     assert built.execute("select arr_delay_min, what_if from app.decision where decision_id = %s", (d,)).fetchone() == (0, True)
     assert built.execute(
-        "select flight_number, stop_reason from app.decision_leg where decision_id = %s order by depth", (d,)
-    ).fetchall() == [("101", None), ("102", "absorbed")]
+        "select flight_number, stop_reason from app.decision_leg where decision_id = %s order by depth, sched_dep_utc", (d,)
+    ).fetchall() == [("101", None), ("102", "absorbed"), ("103", None), ("104", None)]  # 103, 104: scored, outside the chain
 
 
 def test_reason_and_author_are_trimmed(built):
