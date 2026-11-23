@@ -315,3 +315,21 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a useful flag on ordinary bad days. It catches 71-74% of cancellations in the outage but 2-4% on `august` and 5-7% on `debby`, at 9-24% precision.
 - **Why:** the threshold is chosen on the fit month and scored on the holdout, as `min_turn`'s percentile was. July's F1 is set by the outage, so the flag marks outage-scale trouble. The rate itself is still shown for every scored leg.
 - **Revisit if:** operators want an earlier warning on weather days, at the cost of more false flags. Then choose the threshold on recall, or per period type.
+
+## 2026-11-23: Read cancellation risk in `propagate` from the backtest table
+- **Chose:** `propagate` takes the selected flight's ranks, 24h cut, carrier and stress from `ontology.cancel_backtest`, by primary key, and looks only the rate up again through `app_read.cancel_rate_for`, so that a what-if can change the delay bucket.
+- **Gave up:** risk for flights the backtest didn't score (a diversion, or a tail that didn't touch ATL that month), and for ranked legs outside `propagate`'s rows. That is most later legs after an on-time inbound: in `august` and `debby`, 45.6% of cancelled rank-2 targets and 72.6% of rank-3 have no row, against 0.7% at rank 1 (docs/phase-6-plan.md notes).
+- **Why:** one definition of the target set and stress, shared with the scored numbers in docs/phase-6-report.md. A call takes 3.2 ms on N102DN.
+- **Revisit if:** the app needs risk for a schedule that isn't in BTS, such as a live one. Step 4 decides how to show the ranked legs with no row.
+
+## 2026-11-23: A what-if changes only the delay bucket
+- **Chose:** a typed delay moves the inbound's delay bucket, while the target set and stress stay those of the actual flight.
+- **Gave up:** a what-if that also moves the 24h cut, or stress measured at a hypothetical departure.
+- **Why:** stress is measured at the actual departure, which a typed arrival delay doesn't move, and a fixed target set means the what-if rows are the legs the backtest scored.
+- **Revisit if:** what-ifs become possible on flights still in the air, which have no actual departure yet.
+
+## 2026-11-23: Hard-code the cancellation flag threshold at 0.183
+- **Chose:** `app_read.cancel_risk_threshold()` returns 0.183. The July F1 maximum is 0.18338, and no cell rate lies between the two, so the same legs are flagged.
+- **Gave up:** a threshold that follows the data on a rebuild.
+- **Why:** `decision_review` counts frozen risks against it, and a value that moved silently would change past reviews. The phase 6 report shows `app_threshold_pct` beside the fitted threshold.
+- **Revisit if:** a rebuild makes the two disagree.
