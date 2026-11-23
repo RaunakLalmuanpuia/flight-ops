@@ -25,7 +25,8 @@ def built(conn, load_fixture):
         "union all select null, 2, '120-239', '<2%', 1000, 190, 0.19 "
         "union all select carrier_id, 3, '120-239', '<2%', 150, 30, 0.20 from ontology.carrier where code = 'DL' "
         "union all select null, 3, '120-239', '<2%', 40, 4, 0.10 "
-        "union all select carrier_id, 1, '240+', '<2%', 250, 150, 0.60 from ontology.carrier where code = 'DL'"
+        "union all select carrier_id, 1, '240+', '<2%', 250, 150, 0.60 from ontology.carrier where code = 'DL' "
+        "union all select null, 2, '<15', '<2%', 500, 25, 0.05"
     )
     pipeline.run_sql(conn, "rotations/cancel_backtest.sql")
     return conn
@@ -137,3 +138,42 @@ def test_app_role_reads_cancel_risk(built):
         assert built.execute("select app_read.cancel_risk_threshold()").fetchone() is not None
     finally:
         built.execute("RESET ROLE")
+
+
+def test_scored_legs_outside_the_chain_come_back_as_scheduled(built):
+    # 402 absorbs the delay, so the chain stops there and 403 and 404 have no chain row.
+    assert risk(built, "401") == [
+        (0, "selected", "401", None, None),
+        (1, "flown", "402", None, "not scored: no July cell"),
+        (None, "scheduled", "403", 0.05, "all carriers, 500 samples"),
+        (None, "scheduled", "404", None, "not scored: no July cell"),
+    ]
+
+
+def test_scheduled_rows_carry_no_prediction(built):
+    assert built.execute(
+        "select min_turn, slack_min, predicted_dep_delay, predicted_arr_utc, at_risk, stop_reason "
+        "from app_read.propagate(%s) where kind = 'scheduled'",
+        (fid(built, "401"),),
+    ).fetchall() == [(None,) * 6, (None,) * 6]
+
+
+def test_scheduled_legs_are_frozen_but_stay_out_of_the_chain_totals(built):
+    d = record(built, "401")
+    assert built.execute(
+        "select flight_number from app.decision_leg where decision_id = %s and depth is null order by flight_number", (d,)
+    ).fetchall() == [("403",), ("404",)]
+    # Both scheduled legs were cancelled, but the chain (402) wasn't, and 0.05 is under the threshold.
+    assert built.execute(
+        "select cancelled, flagged_cancel_risk, cancel_risk_recorded from app_read.decision_review where decision_id = %s", (d,)
+    ).fetchone() == (0, 0, True)
+
+
+def test_a_scheduled_leg_can_be_the_target(built):
+    d = built.execute(
+        "select app_read.record_decision(%s, null, 'cancel_leg', %s, 'protect the bank', 'duty controller')",
+        (fid(built, "401"), fid(built, "403")),
+    ).fetchone()[0]
+    assert built.execute(
+        "select target_kind, match_label from app_read.decision_review where decision_id = %s", (d,)
+    ).fetchone() == ("scheduled", "airline did the same")
