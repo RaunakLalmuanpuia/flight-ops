@@ -79,7 +79,7 @@ def test_phase3_counts_cancelled_legs_in_the_gap_and_swaps(backtested):
 def test_phase3_scores_against_both_baselines(backtested):
     text = phase3(backtested)
     # depth 1, late_aircraft reported only on 102 (and 502): model at p10 predicts 30 vs 45, zero 45, carry 60.
-    assert "| july_normal | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 |" in text
+    assert "| july_normal | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 | -15.0 |" in text
     assert "| august | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 |" in text
 
 

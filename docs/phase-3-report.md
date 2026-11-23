@@ -6,18 +6,19 @@ A late leg is a flown leg on a tail that touched ATL, arriving 15 min or more la
 
 ## Findings
 
-- **p10 is the min turn to use.** On the normal period at depth 1, its `late_aircraft` error is 13.0 min, against 14.7 at p25 and 20.4 at p50, over 49,076 pairs. p10 is the shortest turn measured, so a shorter one might fit better still: even at p10 the model overpredicts depth-1 `late_aircraft` by 5.0 min on average (9.2 in the outage).
-- **The model beats both baselines everywhere it was scored.** For both targets, both periods and every depth from 1 to 3, its mean absolute error is below predict-0 and below full carry. At depth 1 on the normal period it is 13.0 min for `late_aircraft`, against 48.4 for predict-0 and 36.1 for full carry. Its lead over predict-0 shrinks with depth: by depth 3 it is 32.3 against 39.5 (normal) and 37.7 against 46.5 (outage), because most delays are absorbed by then and predicting 0 is nearly right.
-- **At risk is precise, and recall falls with depth.** At depth 1 on the normal period, 90.1% of legs flagged at risk had 15+ `late_aircraft` minutes, and 89.0% of those legs were flagged. Full carry flags every leg, so its precision is the base rate, 74.8%. By depth 3 the model's precision holds at 86.7%, but its recall drops to 30.5%: delay that returns later in the day comes from somewhere other than the original late arrival.
-- **The outage, held out, scores worse but still beats both baselines.** Depth-1 `late_aircraft` error is 18.4 min, against 57.9 for predict-0 and 60.0 for full carry. It is not fully out of sample, because `min_turn` was measured on all of July, outage included.
-- **Departure delay is undercounted, as expected.** The model predicts only aircraft-driven delay. On average it predicts 17.5 min less than the actual departure delay at depth 1 on the normal period, and 33.8 min less in the outage, where other causes added delay the aircraft didn't cause.
-- **Cancellations are the model's blind spot in the outage.** 9.8% of outage late legs (2,659 of 27,050) had a cancelled leg on their tail before the next flown leg, against 1.6% (1,470 of 90,768) in the normal period. The model shows those legs but predicts nothing for them, so in the outage it scores only the flying that survived.
-- **Hindsight in the chain is small.** The chain follows the order the aircraft actually flew, which a dispatcher wouldn't know in advance. 519 of 333,556 scored pairs at p10 (0.16%) are swaps, where the scored leg was scheduled before the late leg.
+- **p10 is the min turn to use.** On July's normal days at depth 1, its `late_aircraft` error is 13.0 min, against 13.2 at p5, 14.7 at p25 and 20.4 at p50, over 49,243 pairs. p5 scores worse, so p10 is not at the edge of the tested range. It still overpredicts depth-1 `late_aircraft` by 5.0 min on average on July's normal days, 5.8 on `august` and 9.2 in the outage.
+- **On `august`, the holdout, the model beats both baselines.** Its depth-1 `late_aircraft` error is 13.2 min, against 13.0 on the July normal days it was fitted on, 46.5 for predict-0 and 35.6 for full carry. For both targets, every period and every depth from 1 to 3, its mean absolute error is below predict-0 and below full carry. Its lead over predict-0 shrinks with depth: by depth 3 on `august` it is 29.4 against 35.5, because most delays are absorbed by then and predicting 0 is nearly right.
+- **At risk is precise, and recall falls with depth.** At depth 1 on `august`, 89.6% of legs flagged at risk had 15+ `late_aircraft` minutes, and 89.1% of those legs were flagged. Full carry flags every leg, so its precision is the base rate, 74.6%. By depth 3 the model's precision is 83.5%, but its recall drops to 31.1%: delay that returns later in the day comes from somewhere other than the original late arrival.
+- **`debby`, a milder weather disruption, scores close to normal.** Depth-1 `late_aircraft` error is 13.8 min, against 49.4 for predict-0 and 43.4 for full carry.
+- **The `july_outage` scores worse but still beats both baselines.** Depth-1 `late_aircraft` error is 18.4 min, against 57.9 for predict-0 and 60.0 for full carry. It is inside the fit month, because `min_turn` was measured on all of July, outage included.
+- **Departure delay is undercounted, as expected.** The model predicts only aircraft-driven delay. At depth 1 it predicts 13.7 min less than the actual departure delay on average on `august`, 17.4 on July's normal days, 22.1 on `debby` and 33.8 in the outage, where other causes added delay the aircraft didn't cause.
+- **Cancellations are the model's blind spot in a disruption.** 9.8% of `july_outage` late legs (2,660 of 27,050) and 6.7% of `debby`'s (1,320 of 19,821) had a cancelled leg on their tail before the next flown leg, against 1.1% (728 of 67,183) on `august` and 1.7% (1,501 of 90,768) on July's normal days. The model shows those legs but predicts nothing for them, so on a bad day it scores only the flying that survived.
+- **Hindsight in the chain is small.** The chain follows the order the aircraft actually flew, which a dispatcher wouldn't know in advance. On `august`, 248 of 190,834 scored pairs at p10 are swaps, where the scored leg was scheduled before the late leg.
 - **N102DN shows both the blind spot and a correct zero.** Its DEN→ATL arrived 316 min late. The model gives the next flown leg, ATL→BWI, a 50-min turn and 221 min of slack, and calls the delay absorbed. Meanwhile the three legs scheduled in that gap (ATL→CLE, CLE→ATL, ATL→GEG) were cancelled. ATL→BWI left 49 min late with `late_aircraft` reported as 0, so the model was right not to blame the aircraft. Its next leg, BWI→ATL, left 308 min late, also with 0 `late_aircraft`: outage disruption the model doesn't try to predict.
 
 ## Limits
 
-- **One month.** The percentile was chosen, and `min_turn` measured, on the same July, so the scores are in-sample. A second month would allow a true holdout.
+- **Fit on July, scored on August.** The outage is inside the fit month, so outage-period scores are not out of sample. August is.
 - **`late_aircraft` is scored only where BTS reports causes,** on legs that arrived 15+ min late. Legs that recovered below 15 have no cause data, and they are left out of that target rather than scored as 0.
 - **Aircraft only.** BTS has no crew or passenger connections, so delay that moves through a crew or a connecting passenger is invisible to the model.
 - **Pairs at or past a rotation break or the 24h limit are not scored,** so the scores describe chains the data can follow.
@@ -77,22 +78,22 @@ GROUP BY 1 ORDER BY 1
 
 ## Late aircraft minutes against baselines
 
-At p10. The target is the scored leg's reported `late_aircraft` minutes, which BTS reports only when its arrival delay is 15 min or more. Predict-0 never flags a leg, so its recall is 0. Full carry flags every leg, so its recall is 100 and its precision is `carry_precision_pct`.
+At p10. The target is the scored leg's reported `late_aircraft` minutes, which BTS reports only when its arrival delay is 15 min or more. Predict-0 never flags a leg, so its recall is 0. Full carry flags every leg, so its recall is 100 and its precision is `carry_precision_pct`. `mean_error` is the model's predicted minus actual, so below 0 means it undercounts.
 
-| period | depth | pairs | mae_model | mae_zero | mae_carry | precision_pct | recall_pct | carry_precision_pct |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| august | 1 | 32738 | 13.2 | 46.5 | 35.6 | 89.6 | 89.1 | 74.6 |
-| august | 2 | 21039 | 25.0 | 40.9 | 55.8 | 86.7 | 60.9 | 61.3 |
-| august | 3 | 16882 | 29.4 | 35.5 | 64.9 | 83.5 | 31.1 | 51.4 |
-| debby | 1 | 10932 | 13.8 | 49.4 | 43.4 | 90.2 | 88.8 | 71.6 |
-| debby | 2 | 7795 | 27.5 | 43.0 | 66.4 | 87.1 | 54.8 | 58.7 |
-| debby | 3 | 6727 | 31.6 | 37.4 | 79.5 | 86.5 | 25.3 | 50.3 |
-| july_normal | 1 | 49243 | 13.0 | 48.3 | 36.4 | 90.1 | 89.0 | 74.7 |
-| july_normal | 2 | 34316 | 26.4 | 44.2 | 57.9 | 88.3 | 60.0 | 62.5 |
-| july_normal | 3 | 28710 | 32.2 | 39.2 | 67.9 | 86.7 | 30.0 | 53.7 |
-| july_outage | 1 | 17567 | 18.4 | 57.9 | 60.0 | 86.2 | 90.0 | 69.1 |
-| july_outage | 2 | 13724 | 31.7 | 52.4 | 85.9 | 85.9 | 59.5 | 59.7 |
-| july_outage | 3 | 11915 | 37.7 | 46.5 | 100.2 | 87.3 | 30.9 | 53.7 |
+| period | depth | pairs | mae_model | mae_zero | mae_carry | precision_pct | recall_pct | carry_precision_pct | mean_error |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| august | 1 | 32738 | 13.2 | 46.5 | 35.6 | 89.6 | 89.1 | 74.6 | 5.8 |
+| august | 2 | 21039 | 25.0 | 40.9 | 55.8 | 86.7 | 60.9 | 61.3 | -11.8 |
+| august | 3 | 16882 | 29.4 | 35.5 | 64.9 | 83.5 | 31.1 | 51.4 | -22.9 |
+| debby | 1 | 10932 | 13.8 | 49.4 | 43.4 | 90.2 | 88.8 | 71.6 | 5.0 |
+| debby | 2 | 7795 | 27.5 | 43.0 | 66.4 | 87.1 | 54.8 | 58.7 | -17.5 |
+| debby | 3 | 6727 | 31.6 | 37.4 | 79.5 | 86.5 | 25.3 | 50.3 | -27.8 |
+| july_normal | 1 | 49243 | 13.0 | 48.3 | 36.4 | 90.1 | 89.0 | 74.7 | 5.0 |
+| july_normal | 2 | 34316 | 26.4 | 44.2 | 57.9 | 88.3 | 60.0 | 62.5 | -15.2 |
+| july_normal | 3 | 28710 | 32.2 | 39.2 | 67.9 | 86.7 | 30.0 | 53.7 | -26.6 |
+| july_outage | 1 | 17567 | 18.4 | 57.9 | 60.0 | 86.2 | 90.0 | 69.1 | 9.2 |
+| july_outage | 2 | 13724 | 31.7 | 52.4 | 85.9 | 85.9 | 59.5 | 59.7 | -18.4 |
+| july_outage | 3 | 11915 | 37.7 | 46.5 | 100.2 | 87.3 | 30.9 | 53.7 | -32.7 |
 
 <details><summary>SQL</summary>
 
@@ -105,7 +106,8 @@ SELECT period, depth, count(*) AS pairs,
              / nullif(count(*) FILTER (WHERE predicted_dep_delay >= 15), 0), 1) AS precision_pct,
        round(100.0 * count(*) FILTER (WHERE predicted_dep_delay >= 15 AND actual_late_aircraft >= 15)
              / nullif(count(*) FILTER (WHERE actual_late_aircraft >= 15), 0), 1) AS recall_pct,
-       round(100.0 * count(*) FILTER (WHERE actual_late_aircraft >= 15) / count(*), 1) AS carry_precision_pct
+       round(100.0 * count(*) FILTER (WHERE actual_late_aircraft >= 15) / count(*), 1) AS carry_precision_pct,
+       round(avg(predicted_dep_delay - actual_late_aircraft), 1) AS mean_error
 FROM ontology.propagation_backtest
 WHERE percentile = 10 AND actual_late_aircraft IS NOT NULL
 GROUP BY 1, 2 ORDER BY 1, 2
@@ -117,20 +119,20 @@ GROUP BY 1, 2 ORDER BY 1, 2
 
 At p10. The target is the scored leg's departure delay, with early departures as 0. Other causes add to it, so the model should undercount.
 
-| period | depth | pairs | mae_model | mae_zero | mae_carry | precision_pct | recall_pct | carry_precision_pct |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| august | 1 | 64981 | 14.7 | 41.5 | 45.8 | 97.7 | 73.2 | 55.8 |
-| august | 2 | 63425 | 17.8 | 26.9 | 61.6 | 91.9 | 44.6 | 34.6 |
-| august | 3 | 62428 | 18.4 | 21.4 | 65.1 | 86.2 | 20.3 | 27.3 |
-| debby | 1 | 19192 | 22.8 | 54.2 | 57.8 | 98.5 | 69.7 | 61.2 |
-| debby | 2 | 18839 | 27.7 | 37.9 | 74.8 | 94.6 | 37.0 | 43.4 |
-| debby | 3 | 18681 | 29.0 | 32.2 | 78.1 | 88.7 | 15.0 | 37.0 |
-| july_normal | 1 | 88744 | 18.3 | 48.3 | 48.0 | 98.4 | 72.7 | 60.5 |
-| july_normal | 2 | 87461 | 23.6 | 34.5 | 64.4 | 94.2 | 43.1 | 41.2 |
-| july_normal | 3 | 86947 | 24.9 | 28.6 | 68.6 | 90.3 | 19.4 | 33.8 |
-| july_outage | 1 | 26096 | 34.3 | 79.8 | 65.8 | 99.5 | 70.9 | 70.9 |
-| july_outage | 2 | 25492 | 44.1 | 62.2 | 85.8 | 97.8 | 41.1 | 55.6 |
-| july_outage | 3 | 25175 | 45.6 | 52.0 | 91.2 | 96.1 | 18.9 | 48.4 |
+| period | depth | pairs | mae_model | mae_zero | mae_carry | precision_pct | recall_pct | carry_precision_pct | mean_error |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| august | 1 | 64981 | 14.7 | 41.5 | 45.8 | 97.7 | 73.2 | 55.8 | -13.7 |
+| august | 2 | 63425 | 17.8 | 26.9 | 61.6 | 91.9 | 44.6 | 34.6 | -16.4 |
+| august | 3 | 62428 | 18.4 | 21.4 | 65.1 | 86.2 | 20.3 | 27.3 | -17.6 |
+| debby | 1 | 19192 | 22.8 | 54.2 | 57.8 | 98.5 | 69.7 | 61.2 | -22.1 |
+| debby | 2 | 18839 | 27.7 | 37.9 | 74.8 | 94.6 | 37.0 | 43.4 | -26.8 |
+| debby | 3 | 18681 | 29.0 | 32.2 | 78.1 | 88.7 | 15.0 | 37.0 | -28.4 |
+| july_normal | 1 | 88744 | 18.3 | 48.3 | 48.0 | 98.4 | 72.7 | 60.5 | -17.4 |
+| july_normal | 2 | 87461 | 23.6 | 34.5 | 64.4 | 94.2 | 43.1 | 41.2 | -22.4 |
+| july_normal | 3 | 86947 | 24.9 | 28.6 | 68.6 | 90.3 | 19.4 | 33.8 | -24.1 |
+| july_outage | 1 | 26096 | 34.3 | 79.8 | 65.8 | 99.5 | 70.9 | 70.9 | -33.8 |
+| july_outage | 2 | 25492 | 44.1 | 62.2 | 85.8 | 97.8 | 41.1 | 55.6 | -43.4 |
+| july_outage | 3 | 25175 | 45.6 | 52.0 | 91.2 | 96.1 | 18.9 | 48.4 | -45.3 |
 
 <details><summary>SQL</summary>
 
@@ -143,7 +145,8 @@ SELECT period, depth, count(*) AS pairs,
              / nullif(count(*) FILTER (WHERE predicted_dep_delay >= 15), 0), 1) AS precision_pct,
        round(100.0 * count(*) FILTER (WHERE predicted_dep_delay >= 15 AND greatest(actual_dep_delay, 0) >= 15)
              / nullif(count(*) FILTER (WHERE greatest(actual_dep_delay, 0) >= 15), 0), 1) AS recall_pct,
-       round(100.0 * count(*) FILTER (WHERE greatest(actual_dep_delay, 0) >= 15) / count(*), 1) AS carry_precision_pct
+       round(100.0 * count(*) FILTER (WHERE greatest(actual_dep_delay, 0) >= 15) / count(*), 1) AS carry_precision_pct,
+       round(avg(predicted_dep_delay - greatest(actual_dep_delay, 0)), 1) AS mean_error
 FROM ontology.propagation_backtest
 WHERE percentile = 10 AND greatest(actual_dep_delay, 0) IS NOT NULL
 GROUP BY 1, 2 ORDER BY 1, 2
