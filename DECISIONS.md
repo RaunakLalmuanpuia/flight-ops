@@ -259,3 +259,15 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** knowing who wrote a record. Anyone at the keyboard can type any name, and the app must stay on this machine.
 - **Why:** login would be the largest part of the phase, and the review's value is the frozen prediction beside the outcome, not proof of identity.
 - **Revisit if:** the app is deployed anywhere or more than one person logs decisions. Then add Laravel's auth, with users in `app`.
+
+## 2026-11-23: Load August 2024 before modelling cancellations
+- **Chose:** August 2024 beside July, with `min_turn` and every later choice fitted on July and scored on August, named by `ontology.period`.
+- **Gave up:** a quicker cancellation phase scored on July's outage alone, and stable whole-database figures: the build now takes 1,100 s, and reports covering all loaded data moved.
+- **Why:** July contains the outage, so any score drawn from July alone is in-sample. August gives a holdout for normal days, and possibly a second disruption.
+- **Revisit if:** a third month is loaded. Then `ontology.period`'s hard-coded dates become a table.
+
+## 2026-11-23: Count a tail as touching ATL across all loaded months
+- **Chose:** `rotation_leg.touched_atl` stays a property of the tail over all loaded data, so a tail that touched ATL only in August counts in July too.
+- **Gave up:** July figures that stay fixed when a month is added. July's ATL-tail legs went from 377,530 to 440,734.
+- **Why:** a month boundary shouldn't cut a rotation, and a per-month flag would break the July 31 to August 1 chain the national load exists to keep.
+- **Revisit if:** a report needs per-month ATL-tail counts. Then filter by `ontology.period` in that report, not in the flag.

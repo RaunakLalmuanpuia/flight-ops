@@ -14,7 +14,7 @@ it('shows every ATL flight of the ATL local day', function () {
     $this->get('/day/2024-07-19')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('HubDay')
         ->where('day', '2024-07-19')
-        ->where('range', ['first_day' => '2024-07-01', 'last_day' => '2024-07-31'])
+        ->where('range', ['first_day' => '2024-07-01', 'last_day' => '2024-08-31'])
         ->has('flights', 2078)
         ->has('hourly')
         ->has('weather', $metars)

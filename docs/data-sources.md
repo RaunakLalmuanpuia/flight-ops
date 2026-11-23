@@ -14,6 +14,12 @@ Every file is UTF-8 with a header row. Column names in `raw` are the source head
 - **Carrier column:** there is no operating-carrier column. `reporting_airline` is the carrier code, and regional operators report under their own code: at ATL, `9E` has 3,821 flights separately from `DL`'s 41,363.
 - **`2400` times:** 57 ATL flights have it in a scheduled or actual departure or arrival time. Counting `wheelsoff` and `wheelson` too makes it 109, so staging must handle all six columns.
 
+### August 2024
+
+- **File:** `..._2024_8.csv` from the matching PREZIP URL. **Obtained:** scripted, about 2 minutes, no refusal.
+- **Table:** `raw.bts_ontime` gains 619,025 rows (0 quarantined), 12,714 cancelled. SHA-256 `a154c46b18d8dad0be6bbc30d9d01c840de697650b909e563475fc3a8d622d44`.
+- **Role:** the holdout month. `ontology.period` names it `august`.
+
 ## FAA aircraft registry
 
 - **Files:** `MASTER.txt`, `ACFTREF.txt` and `DEREG.txt`, from `https://registry.faa.gov/database/ReleasableAircraft.zip`
@@ -50,6 +56,11 @@ Every file is UTF-8 with a header row. Column names in `raw` are the source head
 - **METAR noise:** 9,493 rows are 5-minute `MADISHF` records, leaving 1,003 others for staging to keep.
 - **Station codes:** the METAR endpoint takes `ATL` and the TAF endpoint takes `KATL`.
 - **TAF shape:** one row per forecast group, so `product_id` identifies the whole forecast.
+
+### August 2024
+
+- **Obtained:** scripted. Both files cover August 2 to September 1 UTC (IEM's end date is exclusive), so they never overlap the July files, as `staging.metar`'s primary key requires.
+- `raw.iem_metar` gains 9,642 rows (SHA-256 `bd4faf29635837e553d68ff26991cb2d722c65a11d0505b2f6c097ac79a0aa5d`), `raw.iem_taf` 1,712 rows (SHA-256 `1b10acd9f1c31820be9cd73d4f3278abcc7b41cbe46809f2b97c7ee9ca0ad513`).
 
 ## Measured July 2024 build
 
