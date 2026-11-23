@@ -211,6 +211,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** a more cautious turn. p10 flags fewer legs at risk: depth-1 recall falls from 95.0% at p25 to 89.0%, while precision rises from 88.5% to 90.1%.
 - **Why:** the backtest scores the error in minutes, which is what the page shows. p10 is the edge of the grid and still overpredicts depth 1 by 5 min on average, so the best turn may be shorter.
 - **Revisit if:** a second month is loaded. Then choose on one month and score on the other, and try percentiles below p10.
+- **Superseded by:** 2026-11-23, "Choose the min-turn percentile on July and score it on August".
 
 ## 2026-11-22: Start a diverted flight's chain from its landing, with no what-if
 - **Chose:** the FlightImpact page propagates a diverted flight from its actual landing time, says that BTS gives no arrival delay for a diversion, and shows no delay form. A `?delay=` on a diverted flight fails validation.
@@ -253,9 +254,34 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** referential integrity, and fixing a typo in place.
 - **Why:** `build` truncates `ontology.flight` with `RESTART IDENTITY`. A foreign key would block that or cascade into the log, and stored ids would point at different flights afterwards. The natural key is unique across all 634,613 July flights.
 - **Revisit if:** a second month makes the natural key collide, or operators need to amend decisions, which would call for an amendment table rather than edits.
+- **Checked:** 2026-11-23, unique across all 1,253,638 July and August flights (docs/phase-6-plan.md notes).
 
 ## 2026-11-23: Type the author on each decision, with no login
 - **Chose:** a required name field on the decision form, remembered in the browser's `localStorage`. No accounts.
 - **Gave up:** knowing who wrote a record. Anyone at the keyboard can type any name, and the app must stay on this machine.
 - **Why:** login would be the largest part of the phase, and the review's value is the frozen prediction beside the outcome, not proof of identity.
 - **Revisit if:** the app is deployed anywhere or more than one person logs decisions. Then add Laravel's auth, with users in `app`.
+
+## 2026-11-23: Load August 2024 before modelling cancellations
+- **Chose:** August 2024 beside July, with `min_turn` and every later choice fitted on July and scored on August, named by `ontology.period`.
+- **Gave up:** a quicker cancellation phase scored on July's outage alone, and stable whole-database figures: the build now takes 1,100 s, and reports covering all loaded data moved.
+- **Why:** July contains the outage, so any score drawn from July alone is in-sample. August gives a holdout for normal days, and possibly a second disruption.
+- **Revisit if:** a third month is loaded. Then `ontology.period`'s hard-coded dates become a table.
+
+## 2026-11-23: Count a tail as touching ATL per calendar month
+- **Chose:** `rotation_leg.touched_atl` is true when the leg's tail touched ATL in the same calendar month as the leg's flight date. Rotations are still built across months.
+- **Gave up:** one ATL-tail set for the whole database. A tail that touched ATL on July 31 has its August 1 legs left out of August's ATL-tail figures until it returns to ATL in August.
+- **Why:** with one flag over all loaded data, adding August made July's ATL-tail legs grow from 377,530 to 440,734, so every July figure in the reports and case study moved. Per month, July stays at 377,530. Late-leg counts hold, but chains from late-July legs now run into August 1, so July pairs and scores moved slightly: `july_normal` depth-1 pairs 49,076 to 49,243, error against predict-0 and carry 48.4 / 36.1 to 48.3 / 36.4, cancelled in the gap 1,470 to 1,501.
+- **Revisit if:** a backtest needs chains that cross a month boundary on tails that touched ATL only in the earlier month.
+
+## 2026-11-23: Treat August 2-6 as a separate period, Debby
+- **Chose:** `ontology.period` labels August 2-6 `debby`: 25, 74, 141, 129 and 45 ATL cancellations, mostly weather (code B), against an August median of 5 a day. The window is consecutive days at 3x the median or more.
+- **Gave up:** one August holdout, and a window chosen by a rule rather than by storm track. Single storm days later in August (9, 18-19, 29-30) stay in `august`.
+- **Why:** it is a weather disruption beside July's IT outage, and scoring it separately shows whether a model fitted on July holds up on a different kind of bad day. It is mild: at worst 6.8% of ATL flights were cancelled, against 43% on July 19.
+- **Revisit if:** a later month has a disruption on the outage's scale. Then that month, not Debby, tests the high-stress cells.
+
+## 2026-11-23: Choose the min-turn percentile on July and score it on August
+- **Chose:** p10, the lowest depth-1 `late_aircraft` error on July's normal days (13.0 min, against 13.2 at p5, 14.7 at p25 and 20.4 at p50), with p5 added to the grid. `min_turn` is measured on July only.
+- **Gave up:** nothing changes in the app.
+- **Why:** choosing and scoring on the same month made phase 3's numbers in-sample. On August the model's depth-1 error is 13.2 min, against 46.5 for predict-0 and 35.6 for carry; on the Debby days (Aug 2-6) it is 13.8, against 49.4 and 43.4.
+- **Revisit if:** never, unless a later month disagrees.

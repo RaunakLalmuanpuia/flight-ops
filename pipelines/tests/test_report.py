@@ -49,9 +49,9 @@ def backtested(conn, load_fixture):
     pipeline.build(conn)
     conn.execute("truncate ontology.min_turn")
     conn.execute(
-        "insert into ontology.min_turn (carrier_id, samples, p10, p25, p50) "
-        "select carrier_id, 500, 30, 40, 60 from ontology.carrier where code = 'DL' "
-        "union all select null, 1000, 20, 45, 70"
+        "insert into ontology.min_turn (carrier_id, samples, p5, p10, p25, p50) "
+        "select carrier_id, 500, 30, 30, 40, 60 from ontology.carrier where code = 'DL' "
+        "union all select null, 1000, 20, 20, 45, 70"
     )
     pipeline.run_sql(conn, "rotations/backtest.sql")
     return conn
@@ -70,14 +70,21 @@ def test_phase3_every_section_runs_and_has_a_heading(backtested):
 
 def test_phase3_counts_cancelled_legs_in_the_gap_and_swaps(backtested):
     text = phase3(backtested)
-    # normal: 101, 102, 104, 301 late; outage: 201 (cancelled 204 in its gap), 401, 402.
-    assert "| normal | 4 | 0 | 0.0 | 7 | 0 |" in text
-    assert "| outage | 3 | 1 | 33.3 | 1 | 1 |" in text
+    # july_normal: 101, 102, 104, 301 late; july_outage: 201 (cancelled 204 in its gap), 401, 402; august: 501, 502.
+    assert "| july_normal | 4 | 0 | 0.0 | 7 | 0 |" in text
+    assert "| july_outage | 3 | 1 | 33.3 | 1 | 1 |" in text
+    assert "| august | 2 | 0 | 0.0 | 1 | 0 |" in text
 
 
 def test_phase3_scores_against_both_baselines(backtested):
-    # normal, depth 1, late_aircraft reported only on 102: model at p10 predicts 30 vs 45, zero 45, carry 60.
-    assert "| normal | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 |" in phase3(backtested)
+    text = phase3(backtested)
+    # depth 1, late_aircraft reported only on 102 (and 502): model at p10 predicts 30 vs 45, zero 45, carry 60.
+    assert "| july_normal | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 | -15.0 |" in text
+    assert "| august | 1 | 1 | 15.0 | 45.0 | 15.0 | 100.0 | 100.0 | 100.0 | -15.0 |" in text
+
+
+def test_phase3_min_turn_shows_p5(backtested):
+    assert "| carrier | samples | p5 | p10 | p25 | p50 |" in phase3(backtested)
 
 
 def test_report_percentile_is_propagates_default(conn):

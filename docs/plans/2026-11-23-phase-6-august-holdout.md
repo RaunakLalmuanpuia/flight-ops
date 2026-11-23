@@ -485,7 +485,11 @@ git commit -m "feat: load August 2024 beside July"
 
 ---
 
-### Task 4: checkpoint. Is there a Debby period?
+### Task 3b (added after Task 3): touched_atl per month, and the debby period
+
+Task 3 found that the whole-data `touched_atl` made July's ATL-tail legs grow 17% (377,530 to 440,734). At the Task 4 checkpoint the user chose a per-month flag and a `debby` period of August 2-6. Both land in one rebuild. The brief is `.superpowers/sdd/task-3b-brief.md`: per-month `touched_atl` in `rotations.sql` with a fixture test, migration 024 for `debby`, and July's ATL-tail legs back to 377,530. The user also accepted the 1,100 s build for now.
+
+### Task 4: checkpoint. Is there a Debby period? (resolved by Task 3b)
 
 **Files:** none until the user decides. Then, if a window is chosen: create `db/migrations/024_debby_period.sql` and modify `pipelines/tests/test_min_turn.py`.
 

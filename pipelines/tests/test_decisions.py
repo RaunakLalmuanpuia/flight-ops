@@ -14,9 +14,9 @@ def built(conn, load_fixture):
     pipeline.build(conn)
     conn.execute("truncate ontology.min_turn")
     conn.execute(
-        "insert into ontology.min_turn (carrier_id, samples, p10, p25, p50) "
-        "select carrier_id, 500, 40, 30, 60 from ontology.carrier where code = 'DL' "
-        "union all select null, 1000, 45, 20, 70"
+        "insert into ontology.min_turn (carrier_id, samples, p5, p10, p25, p50) "
+        "select carrier_id, 500, 40, 40, 30, 60 from ontology.carrier where code = 'DL' "
+        "union all select null, 1000, 45, 45, 20, 70"
     )
     return conn
 

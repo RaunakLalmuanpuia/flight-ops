@@ -55,3 +55,15 @@ def test_atl_view_excludes_other_tails(conn, legs):
     assert conn.execute(
         "select count(*) from ontology.atl_rotation_leg where tail_number = 'N2R'"
     ).fetchone()[0] == 0
+
+
+def test_touched_atl_is_per_calendar_month(conn, load_fixture):
+    load_fixture("ourairports_airports", "airports.csv")
+    load_fixture("bts_ontime", "bts_touched_month.csv")
+    pipeline.build(conn)
+    rows = conn.execute(
+        "select f.flight_number, r.touched_atl, r.prev_flight_id is not null from ontology.rotation_leg r "
+        "join ontology.flight f using (flight_id) order by f.flight_number::int"
+    ).fetchall()
+    # N1T touched ATL in July only, N2T in August only. The chain still crosses the month (3 follows 2, 5 follows 4).
+    assert rows == [("1", True, False), ("2", True, True), ("3", False, True), ("4", False, False), ("5", True, True)]
