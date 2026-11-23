@@ -71,8 +71,9 @@ The other limits are stated in the [phase 3 report](phase-3-report.md#limits):
 ## What I'd do next
 
 1. **A second month, done.** Turns and the percentile are now [fitted on July and scored on August](../DECISIONS.md#2026-11-23-choose-the-min-turn-percentile-on-july-and-score-it-on-august), 13.2 minutes against 13.0 in sample, with Debby as a second, milder disruption.
-2. **Model cancellation risk, in progress.** The outage shows that the high-stakes decision is often cancellation, and the data already carries cause codes, scheduled flying and the gaps where flights disappear. This is the current phase, to be fitted on July and scored on August.
-3. **Then go live.** Current weather and positions (phase 4) are worth more once the model answers the question that matters during a bad day.
+2. **Model cancellation risk, done.** The outage shows that the high-stakes decision is often cancellation. A [rate table](phase-6-report.md) of carrier, chain position, delay and carrier stress, fitted on July, beats delay alone by 6% on August. Its flag mostly fires during an outage, and it scores N102DN's three cancelled legs at 47-51% where delay propagation saw nothing.
+3. **Live data, built.** Current weather and positions around ATL (phase 4) are on their own page. With no live schedule, it shows no predictions.
+4. **Next: a second hub.** Running the same app on another airport is the test of which ATL assumptions are hidden in the code.
 
 The pattern behind all of this is the same: check the data before trusting it, keep the cases where it disagrees with itself visible, and when the model can't see something, put it on screen anyway with a label instead of leaving it out.
 
