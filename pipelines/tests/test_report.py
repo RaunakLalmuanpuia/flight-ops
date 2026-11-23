@@ -49,9 +49,9 @@ def backtested(conn, load_fixture):
     pipeline.build(conn)
     conn.execute("truncate ontology.min_turn")
     conn.execute(
-        "insert into ontology.min_turn (carrier_id, samples, p10, p25, p50) "
-        "select carrier_id, 500, 30, 40, 60 from ontology.carrier where code = 'DL' "
-        "union all select null, 1000, 20, 45, 70"
+        "insert into ontology.min_turn (carrier_id, samples, p5, p10, p25, p50) "
+        "select carrier_id, 500, 30, 30, 40, 60 from ontology.carrier where code = 'DL' "
+        "union all select null, 1000, 20, 20, 45, 70"
     )
     pipeline.run_sql(conn, "rotations/backtest.sql")
     return conn

@@ -14,10 +14,10 @@ def built(conn, load_fixture):
     # Fixed turns so the arithmetic is readable; the fixture alone is too small to measure them.
     conn.execute("truncate ontology.min_turn")
     conn.execute(
-        "insert into ontology.min_turn (carrier_id, samples, p10, p25, p50) "
-        # The default percentile (p10) holds 40 for DL and 45 for all carriers.
-        "select carrier_id, 500, 40, 30, 60 from ontology.carrier where code = 'DL' "
-        "union all select null, 1000, 45, 20, 70"
+        "insert into ontology.min_turn (carrier_id, samples, p5, p10, p25, p50) "
+        # p5 and p10 hold 40 for DL and 45 for all carriers, so either default gives the same chain.
+        "select carrier_id, 500, 40, 40, 30, 60 from ontology.carrier where code = 'DL' "
+        "union all select null, 1000, 45, 45, 20, 70"
     )
     return conn
 
@@ -57,6 +57,11 @@ def test_what_if_delay_replaces_the_actual_arrival(built):
 
 def test_percentile_selects_the_min_turn_column(built):
     assert chain(built, "101", None, 50)[1] == (1, "flown", "102", -60, 60, True, None)
+
+
+def test_p5_is_a_percentile(built):
+    built.execute("update ontology.min_turn set p5 = 35 where carrier_id is not null")
+    assert chain(built, "101", None, 5)[1] == (1, "flown", "102", -35, 35, True, None)
 
 
 def test_carrier_with_few_samples_falls_back_to_all_carriers(built):

@@ -9,9 +9,11 @@ WITH turn AS (
     JOIN ontology.delay d ON d.flight_id = n.flight_id AND d.cause = 'late_aircraft'
     WHERE r.connects AND r.touched_atl
       AND n.actual_dep_utc >= p.actual_arr_utc  -- an overlap is a data error, not a turn
+      AND ontology.period(n.flight_date) LIKE 'july_%'  -- fit on July only, so August scores out of sample
 )
-INSERT INTO ontology.min_turn (carrier_id, samples, p10, p25, p50)
+INSERT INTO ontology.min_turn (carrier_id, samples, p5, p10, p25, p50)
 SELECT carrier_id, count(*),
+       round(percentile_cont(0.05) WITHIN GROUP (ORDER BY minutes)::numeric),
        round(percentile_cont(0.10) WITHIN GROUP (ORDER BY minutes)::numeric),
        round(percentile_cont(0.25) WITHIN GROUP (ORDER BY minutes)::numeric),
        round(percentile_cont(0.50) WITHIN GROUP (ORDER BY minutes)::numeric)
