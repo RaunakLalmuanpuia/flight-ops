@@ -14,3 +14,8 @@ it('cannot write to ontology', function () {
 it('cannot create tables in app_read', function () {
     expect(fn () => DB::statement('create table app_read.scratch (i int)'))->toThrow(QueryException::class);
 });
+
+it('cannot write to the decision log directly', function () {
+    expect(fn () => DB::statement("insert into app.decision (flight_id, what_if, percentile, action, reason, author) values (1, false, 10, 'other', 'x', 'x')"))
+        ->toThrow(QueryException::class);
+});

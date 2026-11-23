@@ -4,12 +4,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function n102dn(): int
-{
-    // DEN->ATL on July 19, 316 min late; looked up, since flight_id is a surrogate
-    return DB::selectOne("select flight_id from tail_legs where tail_number = 'N102DN' and leg_day = '2024-07-19' and origin = 'DEN'")->flight_id;
-}
-
 it('shows the chain of a late arrival with cancelled legs in its gap', function () {
     $this->get('/flights/'.n102dn())->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('FlightImpact')
