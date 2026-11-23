@@ -51,7 +51,7 @@ flight-ops/
 - **Hex:** uppercase, then match against `staging.v_faa_current`. That is today's registry, which is correct for a live flight. `staging.faa_record` can't be used, because it holds only July BTS tails.
 - **Unresolved, with a reason:** `hex not in FAA registry` (foreign or military) and `ambiguous hex`. A row with no position is kept with a NULL distance if the snapshot holds more than one registration for a hex. None are dropped.
 - **Operator:** the first 3 characters of the trimmed callsign, matched against `staging.callsign_prefix`. A callsign that is a tail number (general aviation) gets an operator of none and the reason `general aviation callsign`, a blank callsign gets `no callsign`, and any other unmatched prefix gets `unknown prefix`.
-- **Distance and bearing:** haversine in plain SQL, from ATL's OurAirports coordinates held as a constant in `sources/live.py` (the bounding box needs them before any database read). Phase 6 replaces it.
+- **Distance and bearing:** haversine in plain SQL, from ATL's OurAirports coordinates held as a constant in `sources/live.py` (the bounding box needs them before any database read). Phase 7 (second hub) replaces it.
 
 ## App
 

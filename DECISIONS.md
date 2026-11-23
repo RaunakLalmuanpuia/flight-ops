@@ -53,8 +53,8 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 
 ## 2026-11-01: Run locally and containerize in the final phase
 - **Chose:** local Postgres, a Python virtual environment and the Laravel dev server. Docker becomes the last roadmap phase.
-- **Gave up:** a one-command setup on another machine. The Postgres version comes from this Mac (18.1) instead of being pinned in the repo, so setup differences can go unnoticed until phase 7.
-- **Why:** no Docker runtime is installed, and nothing before phase 7 needs one.
+- **Gave up:** a one-command setup on another machine. The Postgres version comes from this Mac (18.1) instead of being pinned in the repo, so setup differences can go unnoticed until phase 8.
+- **Why:** no Docker runtime is installed, and nothing before phase 8 needs one.
 - **Revisit if:** someone else needs to run the project sooner, or a local dependency becomes hard to install.
 
 ## 2026-11-01: Key raw reloads on file hash, and append changed files
@@ -174,7 +174,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Chose:** Pest feature tests run as `flightops_app` against the local `flightops` database and assert measured July 2024 values, such as 2,078 flights and 899 cancellations on July 19.
 - **Gave up:** hermetic tests. They need the database loaded and migrated, and they break if the data is rebuilt differently.
 - **Why:** the role cannot write, so the tests cannot seed fixtures without owner rights. The view logic already has fixture tests in pytest, so these tests check the wiring and the real numbers.
-- **Revisit if:** phase 7 containerizes the stack. Then seed a known database for the app tests.
+- **Revisit if:** phase 8 containerizes the stack. Then seed a known database for the app tests.
 
 ## 2026-11-22: Order a tail's legs by scheduled departure
 - **Chose:** `tail_legs.leg_order` sorts every leg, flown or cancelled, by scheduled departure.
@@ -234,7 +234,7 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Chose:** `python -m flightops live` polls every 60 s while left running in a terminal. The page shows positions and weather only, with no flight numbers or delays.
 - **Gave up:** a page that is live without anyone acting, and any link from a live aircraft to a scheduled flight.
 - **Why:** the user doesn't want a background job on this Mac, pipelines stay the only writers, and BTS has no schedule for today. A full day costs 1,440 of the 4,000 daily state-vector credits.
-- **Revisit if:** a schedule source is added, or the app is containerized in phase 7 and a scheduler comes for free.
+- **Revisit if:** a schedule source is added, or the app is containerized in phase 8 and a scheduler comes for free.
 
 ## 2026-11-23: Write decisions through one SQL function
 - **Chose:** `app_read.record_decision`, a `SECURITY DEFINER` function that runs `propagate` and stores the decision with a frozen copy of the chain. `flightops_app` gets `EXECUTE` on it and nothing on `app`.
