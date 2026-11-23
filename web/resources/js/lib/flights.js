@@ -1,13 +1,10 @@
+import { GLOSSARY } from './glossary.js';
 import { toDate } from './time.js';
 
-export const CAVEATS = {
-    metar_stale: 'No METAR within 90 min',
-    rotation_break: 'Rotation break',
-    aircraft_unresolved: 'Aircraft not resolved',
-    aircraft_medium_confidence: 'Medium-confidence aircraft',
-    block_mismatch: 'Elapsed time disagrees with times',
-    no_tail: 'No tail reported',
-};
+// Data warning keys match glossary keys, so the chip and its definition cannot drift
+export const CAVEATS = Object.fromEntries(
+    ['metar_stale', 'rotation_break', 'aircraft_unresolved', 'aircraft_medium_confidence', 'block_mismatch', 'no_tail'].map((k) => [k, GLOSSARY[k].plain]),
+);
 
 const CAUSES = { carrier: 'carrier', weather: 'weather', nas: 'NAS', security: 'security', late_aircraft: 'late aircraft' };
 

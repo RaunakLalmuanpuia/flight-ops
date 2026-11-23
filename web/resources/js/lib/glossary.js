@@ -153,15 +153,15 @@ export const GLOSSARY = {
         short: 'A network of volunteer receivers that pick up the position broadcasts aircraft send out.',
         deeper: 'Aircraft broadcast position by ADS-B. OpenSky collects it, and the live page polls it every minute.',
     },
-    aircraft_resolution: {
-        plain: 'Aircraft matched', term: 'resolution', group: 'data',
-        short: 'Working out which physical aircraft a registration meant on that date.',
-        deeper: 'Each match records how it was made and a confidence level. Unmatched aircraft are flagged with a reason, never guessed.',
+    aircraft_unresolved: {
+        plain: 'Aircraft not identified', term: null, group: 'data',
+        short: 'The registration could not be matched to one physical aircraft on that date.',
+        deeper: 'Each match records how it was made and how sure it is. Unmatched aircraft are flagged with a reason, never guessed.',
     },
-    confidence: {
-        plain: 'Match confidence', term: null, group: 'data',
-        short: 'How sure the match is. Medium means the register needed interpreting, for example after a re-registration.',
-        deeper: 'Medium-confidence flights are flagged in the data warnings so you can filter to them.',
+    aircraft_medium_confidence: {
+        plain: 'Aircraft match uncertain', term: 'medium confidence', group: 'data',
+        short: 'The aircraft was identified, but the register needed interpreting, for example after a re-registration.',
+        deeper: 'Filter to these flights with the data warning chip if you need to rely on which airframe flew.',
     },
     block_mismatch: {
         plain: 'Flight time disagrees', term: 'block time', group: 'data',

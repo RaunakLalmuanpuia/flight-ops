@@ -9,11 +9,27 @@ if (!entry && import.meta.env.DEV) console.warn(`Term: no glossary entry "${prop
 const open = ref(false);
 const id = useId();
 const root = ref(null);
-const outside = (e) => {
-    if (!root.value?.contains(e.target)) open.value = false;
+const pos = ref({});
+// Fixed to the viewport so scrolling tables (overflow-x-auto) don't clip it; closes on scroll instead of following
+const toggle = (e) => {
+    if (!open.value) {
+        const r = e.currentTarget.getBoundingClientRect();
+        pos.value = { top: `${r.bottom + 4}px`, left: `${Math.max(8, Math.min(r.left, window.innerWidth - 272))}px` };
+    }
+    open.value = !open.value;
 };
-watch(open, (v) => (v ? document.addEventListener('click', outside) : document.removeEventListener('click', outside)));
-onBeforeUnmount(() => document.removeEventListener('click', outside));
+const close = () => (open.value = false);
+const outside = (e) => {
+    if (!root.value?.contains(e.target)) close();
+};
+const listen = (on) => {
+    const m = on ? 'addEventListener' : 'removeEventListener';
+    document[m]('click', outside);
+    window[m]('scroll', close, true);
+    window[m]('resize', close);
+};
+watch(open, listen);
+onBeforeUnmount(() => listen(false));
 </script>
 
 <template>
@@ -27,9 +43,9 @@ onBeforeUnmount(() => document.removeEventListener('click', outside));
             :aria-expanded="open"
             :aria-controls="id"
             :aria-label="`What is ${entry.plain}?`"
-            @click="open = !open"
+            @click="toggle"
         >ⓘ</button>
-        <span v-if="open" :id="id" role="note" class="absolute top-full left-0 z-20 mt-1 w-64 rounded border border-slate-200 bg-white p-2 text-left text-xs font-normal whitespace-normal normal-case text-slate-700 shadow-lg">
+        <span v-if="open" :id="id" role="note" :style="pos" class="fixed z-50 w-64 rounded border border-slate-200 bg-white p-2 text-left text-xs font-normal whitespace-normal normal-case text-slate-700 shadow-lg">
             {{ entry.short }}
             <a :href="`/guide#${k}`" class="ml-1 text-sky-700 underline">Glossary</a>
         </span>
