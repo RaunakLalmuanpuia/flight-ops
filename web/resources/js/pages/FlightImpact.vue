@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import Term from '../components/Term.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import PageHelp from '../components/PageHelp.vue';
 import TourBar from '../components/TourBar.vue';
@@ -12,14 +13,14 @@ const props = defineProps({ flight: Object, legs: Array, delay: Number, whatIf: 
 const page = usePage();
 
 const STOPS = {
-    absorbed: 'Delay absorbed: every later leg is predicted on time.',
-    break: "Rotation break: the next leg doesn't start where this one landed, so the chain stops unpredicted.",
-    limit: 'The next leg is scheduled more than 24 hours after this arrival, so the chain stops unpredicted.',
-    end: "End of this tail's data while the delay was still being carried.",
+    absorbed: 'Delay absorbed: every later flight is predicted on time.',
+    break: "Gap in the aircraft's route: the next flight doesn't start where this one landed, so the chain stops here.",
+    limit: 'The next flight is scheduled more than 24 hours after this arrival, so the chain stops here.',
+    end: "The data for this aircraft ends while the delay was still being carried.",
 };
 const OUTSIDE = {
-    cancelled: 'Cancelled in the gap, delay not predicted',
-    scheduled: 'Later on the schedule, outside the propagated chain',
+    cancelled: 'Cancelled that day, so no delay predicted',
+    scheduled: 'Later in the schedule, outside the delay chain',
 };
 
 const input = ref(Math.max(0, props.delay ?? 0));
@@ -42,7 +43,7 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
                 {{ flight.carrier }} {{ flight.flight_number }} · {{ flight.origin }} → {{ flight.dest }} · {{ localDate(flight.sched_dep_utc, flight.origin_tz) }} · {{ flight.tail_number }}
             </h1>
             <p v-if="flight.diverted" class="text-sm text-violet-800">
-                Diverted, landed {{ flight.landed ?? '?' }}. BTS gives no arrival delay for a diversion, so the chain starts from the actual landing time and there is no delay to change.
+                Diverted, landed {{ flight.landed ?? '?' }}. US flight records give no arrival delay for a diverted flight, so the chain starts from the actual landing time and there is no delay to change.
             </p>
             <p v-else class="text-sm">Arrived {{ arrival(flight.actual_arr_delay) }}.<template v-if="whatIf"> Showing what a {{ delay }}-min arrival delay would do instead.</template></p>
         </header>
@@ -55,7 +56,7 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
         </PageHelp>
 
         <form v-if="!flight.diverted" class="flex flex-wrap items-end gap-2 text-sm" @submit.prevent="submit">
-            <label>Arrival delay to propagate (min)
+            <label><Term k="what_if" label="Try a different arrival delay" /> (minutes)
                 <input v-model.number="input" type="number" min="0" max="1440" step="1" required class="ml-1 w-24 rounded border border-slate-300 bg-white px-1 py-0.5" />
             </label>
             <button type="submit" class="rounded border border-slate-300 bg-white px-2 py-0.5">Try it</button>
@@ -64,20 +65,20 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
         </form>
 
         <p class="text-xs text-slate-500">
-            Aircraft-driven delay only: no crew or passenger connections. Each leg is predicted from the previous predicted arrival, the carrier's minimum turn measured from July, and the schedule, with no time made up in the air. At risk means a predicted departure delay of 15 min or more.
+            Counts aircraft delay only: no crew or passenger connections. Each later flight is predicted from the previous predicted arrival, the airline's minimum turnaround measured in July, and the schedule, with no time made up in the air. At risk means predicted to leave 15 minutes or more late.
         </p>
         <p class="text-xs text-slate-500">{{ CANCEL_RISK_CAVEAT }}</p>
 
-        <p v-if="!legs.length" class="text-slate-500">No later flights on this tail in the loaded data.</p>
+        <p v-if="!legs.length" class="text-slate-500">No later flights for this aircraft in the loaded data.</p>
         <div v-else class="overflow-x-auto rounded border border-slate-200 bg-white">
             <table class="w-full whitespace-nowrap text-left text-sm">
                 <thead class="bg-slate-100 text-xs uppercase text-slate-600">
                     <tr>
-                        <th class="px-2 py-1">Leg</th><th class="px-2 py-1">Flight</th><th class="px-2 py-1">Route</th>
-                        <th class="px-2 py-1">Sched dep (local)</th><th class="px-2 py-1">Min turn</th><th class="px-2 py-1">Slack</th>
-                        <th class="px-2 py-1">Predicted dep delay</th><th class="px-2 py-1">Cancel risk</th>
-                        <th class="px-2 py-1" :class="dim">Actual dep delay</th><th class="px-2 py-1" :class="dim">Actual arr delay</th>
-                        <th class="px-2 py-1" :class="dim">Actual late-aircraft</th>
+                        <th class="px-2 py-1">Order</th><th class="px-2 py-1">Flight</th><th class="px-2 py-1">Route</th>
+                        <th class="px-2 py-1">Scheduled departure (local)</th><th class="px-2 py-1"><Term k="min_turn" label="Min. turnaround" /></th><th class="px-2 py-1"><Term k="slack" label="Spare time" /></th>
+                        <th class="px-2 py-1"><Term k="propagation" label="Predicted departure delay" /></th><th class="px-2 py-1"><Term k="cancel_risk" label="Chance of cancellation" /></th>
+                        <th class="px-2 py-1" :class="dim">Actual departure delay</th><th class="px-2 py-1" :class="dim">Actual arrival delay</th>
+                        <th class="px-2 py-1" :class="dim"><Term k="late_aircraft" label="Actual late-inbound delay" /></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,7 +98,7 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
                         </template>
                         <td v-else colspan="3" class="px-2 py-1 italic">{{ OUTSIDE[l.kind] }}</td>
                         <td class="px-2 py-1">
-                            <span v-if="risk(l).flagged" class="badge bg-red-100 text-red-800">{{ risk(l).text }} · cancel risk</span>
+                            <span v-if="risk(l).flagged" class="badge bg-red-100 text-red-800">{{ risk(l).text }} · high</span>
                             <span v-else :class="!risk(l).basis && 'text-slate-500'">{{ risk(l).text }}</span>
                             <div v-if="risk(l).basis" class="text-xs text-slate-500">{{ risk(l).basis }}</div>
                         </td>
