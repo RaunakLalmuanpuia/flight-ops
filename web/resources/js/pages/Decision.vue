@@ -57,7 +57,7 @@ const cell = 'px-2 py-1';
 
         <div class="overflow-x-auto rounded border border-slate-200 bg-white">
             <table class="w-full whitespace-nowrap text-left text-sm">
-                <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+                <thead class="whitespace-normal bg-slate-100 align-bottom text-xs uppercase text-slate-600">
                     <tr>
                         <th :class="cell">Order</th><th :class="cell">Flight</th><th :class="cell">Route</th><th :class="cell">Scheduled departure (local)</th>
                         <th :class="cell">Predicted departure delay (as decided)</th><th :class="cell"><Term k="cancel_risk" label="Chance of cancellation" /> (as decided)</th><th :class="cell">Actual departure delay</th>

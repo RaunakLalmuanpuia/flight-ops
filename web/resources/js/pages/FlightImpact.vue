@@ -72,7 +72,7 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
         <p v-if="!legs.length" class="text-slate-500">No later flights for this aircraft in the loaded data.</p>
         <div v-else class="overflow-x-auto rounded border border-slate-200 bg-white">
             <table class="w-full whitespace-nowrap text-left text-sm">
-                <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+                <thead class="whitespace-normal bg-slate-100 align-bottom text-xs uppercase text-slate-600">
                     <tr>
                         <th class="px-2 py-1">Order</th><th class="px-2 py-1">Flight</th><th class="px-2 py-1">Route</th>
                         <th class="px-2 py-1">Scheduled departure (local)</th><th class="px-2 py-1"><Term k="min_turn" label="Min. turnaround" /></th><th class="px-2 py-1"><Term k="slack" label="Spare time" /></th>
