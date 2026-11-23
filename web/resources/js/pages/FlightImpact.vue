@@ -2,8 +2,9 @@
 import { computed, ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { localDate, localTime, utcTitle } from '../lib/time.js';
+import DecisionPanel from '../components/DecisionPanel.vue';
 
-const props = defineProps({ flight: Object, legs: Array, delay: Number, whatIf: Boolean, stop: String });
+const props = defineProps({ flight: Object, legs: Array, delay: Number, whatIf: Boolean, stop: String, decisions: Array });
 const page = usePage();
 
 const STOPS = {
@@ -85,5 +86,6 @@ const arrival = (n) => (n > 0 ? `${n} min late` : n < 0 ? `${-n} min early` : 'o
 
         <p v-if="stop" class="text-sm text-slate-700">{{ STOPS[stop] ?? stop }}</p>
         <p v-if="whatIf" class="text-xs text-slate-500">Actual columns are dimmed and not comparable: they record what followed the real {{ flight.actual_arr_delay }}-min delay, not this one.</p>
+        <DecisionPanel :flight-id="flight.flight_id" :legs="legs" :what-if-delay="whatIf ? delay : null" :decisions="decisions" />
     </main>
 </template>

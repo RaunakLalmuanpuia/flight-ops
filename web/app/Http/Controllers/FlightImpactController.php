@@ -42,6 +42,11 @@ class FlightImpactController
             'delay' => $whatIf ? (int) $given : $leg->arr_delay_min,
             'whatIf' => $whatIf,
             'stop' => $rows->pluck('stop_reason')->filter()->last(),
+            // recorded_at is the transaction start, so decision_id breaks ties between decisions in one transaction
+            'decisions' => DB::select(
+                'select decision_id, recorded_at, author, action, target_carrier, target_flight_number, target_origin, target_dest, match_label
+                 from decision_review where current_flight_id = ? order by recorded_at desc, decision_id desc',
+                [$flight]),
         ]);
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia as Assert;
 
 // Every test rolls back, so the real decision log never holds test rows.
 uses(DatabaseTransactions::class);
@@ -59,4 +60,17 @@ it('rejects a form that fails validation, recording nothing', function (array $f
 it('shows a database refusal as a form error, recording nothing', function () {
     decision(['target' => n102dn()])->assertSessionHasErrors(['decision' => 'The target is not a later leg in this chain.']);
     expect(pestDecisions())->toBe(0);
+});
+
+it('lists earlier decisions on the flight, newest first', function () {
+    decision(['action' => 'hold_departure']);
+    decision(['action' => 'swap_aircraft', 'reason' => 'second look']);
+
+    $this->get('/flights/'.n102dn())->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('FlightImpact')
+        ->where('decisions.0.action', 'swap_aircraft')
+        ->where('decisions.0.author', 'pest')
+        ->where('decisions.0.target_flight_number', '2590')
+        ->where('decisions.0.match_label', 'this tail flew it, +49 min (swap not visible)')
+        ->where('decisions.1.action', 'hold_departure'));
 });

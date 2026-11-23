@@ -253,3 +253,9 @@ Tradeoffs made while building flight-ops, newest last. Each entry says what was 
 - **Gave up:** referential integrity, and fixing a typo in place.
 - **Why:** `build` truncates `ontology.flight` with `RESTART IDENTITY`. A foreign key would block that or cascade into the log, and stored ids would point at different flights afterwards. The natural key is unique across all 634,613 July flights.
 - **Revisit if:** a second month makes the natural key collide, or operators need to amend decisions, which would call for an amendment table rather than edits.
+
+## 2026-11-23: Type the author on each decision, with no login
+- **Chose:** a required name field on the decision form, remembered in the browser's `localStorage`. No accounts.
+- **Gave up:** knowing who wrote a record. Anyone at the keyboard can type any name, and the app must stay on this machine.
+- **Why:** login would be the largest part of the phase, and the review's value is the frozen prediction beside the outcome, not proof of identity.
+- **Revisit if:** the app is deployed anywhere or more than one person logs decisions. Then add Laravel's auth, with users in `app`.
