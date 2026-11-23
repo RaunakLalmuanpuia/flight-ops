@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import PageHelp from '../components/PageHelp.vue';
+import TourBar from '../components/TourBar.vue';
 import { ATL_TZ, localTime } from '../lib/time.js';
 import { freshness, motion, LIVE_REASONS } from '../lib/live.js';
 
@@ -17,11 +19,19 @@ const CAVEATS = [
 
 <template>
     <Head title="ATL live" />
+    <TourBar />
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">ATL · live <span class="text-sm font-normal text-slate-500">(Atlanta local time)</span></h1>
+            <Link href="/guide" class="text-sm text-sky-700 underline">Guide</Link>
             <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July–August 2024 history →</Link>
         </header>
+
+        <PageHelp>
+            <p><strong>What this shows:</strong> aircraft near Atlanta right now, from their own position broadcasts, plus the latest airport weather report.</p>
+            <p><strong>How to read it:</strong> each row is one aircraft within about 90 nautical miles. A registration links to that plane's last day in the July 2024 data. Grey text explains why an aircraft or operator could not be identified.</p>
+            <p><strong>Limits:</strong> there is no schedule here, because US flight records are published months late. So this page has no delays or predictions.</p>
+        </PageHelp>
 
         <p v-if="fresh.state === 'never'" role="status" class="rounded border border-slate-300 bg-slate-50 p-3 text-sm">
             No live data yet. Start the loop from <code>pipelines/</code>:

@@ -15,8 +15,8 @@ export const STEPS = [
     {
         href: '/flights/371994',
         title: 'How a delay spreads',
-        look: 'This flight landed very late. Each row is a later flight of the same plane. "Spare time" is how much delay the schedule can soak up. When it runs out, the next flight is predicted late and marked at risk.',
-        click: 'Type 60 into the delay box and press Try it to see a smaller delay. Then come back and press Next.',
+        look: 'This flight landed 316 minutes late. Each row is a later flight of the same plane. The next three were cancelled that day. The flight to Baltimore (BWI) had enough spare time to soak up the delay, so it is predicted on time.',
+        click: 'Type 600 into the delay box and press Try it. Now the spare time runs out: the Baltimore flight is predicted over an hour late and marked at risk. Then press Next.',
     },
     {
         href: '/flights/371994',
@@ -28,7 +28,7 @@ export const STEPS = [
         href: '/decisions',
         title: 'The decision log',
         look: 'Every decision is kept here with who made it, why, and how it compared with what really happened. That record is how a team learns from a bad day.',
-        click: 'Open the "Cancel a leg" decision to see the full record. You have finished the tour.',
+        click: 'Open the walkthrough\'s "Cancel a leg" decision on DL 1487 to Cleveland (CLE) to see the full record. You have finished the tour.',
     },
 ];
 

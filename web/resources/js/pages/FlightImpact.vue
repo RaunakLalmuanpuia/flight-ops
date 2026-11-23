@@ -1,7 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import PageHelp from '../components/PageHelp.vue';
+import TourBar from '../components/TourBar.vue';
 import { localDate, localTime, utcTitle } from '../lib/time.js';
+import { stepFromQuery } from '../lib/tour.js';
 import { CANCEL_RISK_CAVEAT, cancelRisk } from '../lib/risk.js';
 import DecisionPanel from '../components/DecisionPanel.vue';
 
@@ -20,7 +23,9 @@ const OUTSIDE = {
 };
 
 const input = ref(Math.max(0, props.delay ?? 0));
-const submit = () => router.get(`/flights/${props.flight.flight_id}`, { delay: input.value });
+// Keep the tour step through a what-if so the tour bar stays
+const tour = computed(() => stepFromQuery(page.url.split('?')[1] ?? ''));
+const submit = () => router.get(`/flights/${props.flight.flight_id}`, { delay: input.value, ...(tour.value && { tour: tour.value }) });
 const dim = computed(() => (props.whatIf ? 'opacity-40' : ''));
 const minutes = (n) => (n === null || n === undefined ? '—' : `${n} min`);
 const arrival = (n) => (n > 0 ? `${n} min late` : n < 0 ? `${-n} min early` : 'on time');
@@ -29,9 +34,10 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
 
 <template>
     <Head :title="`${flight.carrier} ${flight.flight_number} impact`" />
+    <TourBar />
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="space-y-1">
-            <Link :href="`/tail/${flight.tail_number}/${flight.leg_day}`" class="text-sm text-sky-700 underline">← {{ flight.tail_number }} on {{ flight.leg_day }}</Link>
+            <Link :href="`/tail/${flight.tail_number}/${flight.leg_day}`" class="text-sm text-sky-700 underline">← {{ flight.tail_number }} on {{ flight.leg_day }}</Link> · <Link href="/guide" class="text-sm text-sky-700 underline">Guide</Link>
             <h1 class="text-xl font-semibold">
                 {{ flight.carrier }} {{ flight.flight_number }} · {{ flight.origin }} → {{ flight.dest }} · {{ localDate(flight.sched_dep_utc, flight.origin_tz) }} · {{ flight.tail_number }}
             </h1>
@@ -41,12 +47,19 @@ const risk = (l) => cancelRisk(l, props.cancelThreshold);
             <p v-else class="text-sm">Arrived {{ arrival(flight.actual_arr_delay) }}.<template v-if="whatIf"> Showing what a {{ delay }}-min arrival delay would do instead.</template></p>
         </header>
 
+        <PageHelp>
+            <p><strong>What this shows:</strong> what this flight's late arrival does to the same aircraft's later flights.</p>
+            <p><strong>How to read it:</strong> each row is a later flight. <em>Minimum turnaround</em> is the fastest the airline can get the plane ready again. <em>Spare time</em> is how much delay the schedule can soak up. When the spare time runs out, the next flight is predicted late, and 15+ minutes is marked <em>at risk</em>. The <em>Actual</em> columns show what really happened, so you can judge the prediction.</p>
+            <p><strong>Chance of cancellation</strong> is how often flights like that one were cancelled in July 2024. A red badge means it is high.</p>
+            <p><strong>What to do next:</strong> try a different delay in the box, or log what you would do in "Log a decision" at the bottom.</p>
+        </PageHelp>
+
         <form v-if="!flight.diverted" class="flex flex-wrap items-end gap-2 text-sm" @submit.prevent="submit">
             <label>Arrival delay to propagate (min)
                 <input v-model.number="input" type="number" min="0" max="1440" step="1" required class="ml-1 w-24 rounded border border-slate-300 bg-white px-1 py-0.5" />
             </label>
-            <button type="submit" class="rounded border border-slate-300 bg-white px-2 py-0.5">Propagate</button>
-            <Link v-if="whatIf" :href="`/flights/${flight.flight_id}`" class="text-sky-700 underline">Back to the actual delay</Link>
+            <button type="submit" class="rounded border border-slate-300 bg-white px-2 py-0.5">Try it</button>
+            <Link v-if="whatIf" :href="`/flights/${flight.flight_id}${tour ? `?tour=${tour}` : ''}`" class="text-sky-700 underline">Back to the actual delay</Link>
             <p v-if="page.props.errors?.delay" class="w-full text-red-700" role="alert">{{ page.props.errors.delay }}</p>
         </form>
 

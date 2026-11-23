@@ -1,5 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import PageHelp from '../components/PageHelp.vue';
+import TourBar from '../components/TourBar.vue';
 import { ATL_TZ, localDate, localTime, utcTitle } from '../lib/time.js';
 import { ACTIONS, HINDSIGHT, outcome } from '../lib/decisions.js';
 
@@ -10,11 +12,19 @@ const cell = 'px-2 py-1';
 
 <template>
     <Head title="Decisions" />
+    <TourBar />
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="flex flex-wrap items-center gap-4">
             <h1 class="mr-auto text-xl font-semibold">Decision log</h1>
+            <Link href="/guide" class="text-sm text-sky-700 underline">Guide</Link>
             <Link href="/day/2024-07-19" class="text-sm text-sky-700 underline">July–August 2024 history →</Link>
         </header>
+
+        <PageHelp>
+            <p><strong>What this shows:</strong> every decision logged from a flight page: who, when, what they chose and why.</p>
+            <p><strong>How to read it:</strong> <em>Outcome</em> compares the decision with what really happened in 2024. <em>Chance of cancellation</em> says how many later flights were flagged high-risk when the decision was logged. Older decisions were logged before that score existed.</p>
+            <p><strong>What to do next:</strong> open a decision to see its full record.</p>
+        </PageHelp>
         <p class="text-xs text-slate-500">{{ HINDSIGHT }}</p>
 
         <p v-if="!decisions.length" class="text-slate-500">No decisions yet. Log one from any flight's impact page.</p>

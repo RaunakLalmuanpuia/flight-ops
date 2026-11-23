@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import PageHelp from '../components/PageHelp.vue';
+import TourBar from '../components/TourBar.vue';
 import { ATL_TZ, localDate, localTime, utcTitle } from '../lib/time.js';
 import { ACTIONS, HINDSIGHT, outcome } from '../lib/decisions.js';
 import { CANCEL_RISK_CAVEAT, cancelRisk } from '../lib/risk.js';
@@ -17,9 +19,10 @@ const cell = 'px-2 py-1';
 
 <template>
     <Head :title="`Decision ${d.decision_id}`" />
+    <TourBar />
     <main class="mx-auto max-w-7xl space-y-4 px-4 py-6">
         <header class="space-y-1">
-            <Link href="/decisions" class="text-sm text-sky-700 underline">← Decision log</Link>
+            <Link href="/decisions" class="text-sm text-sky-700 underline">← Decision log</Link> · <Link href="/guide" class="text-sm text-sky-700 underline">Guide</Link>
             <h1 class="text-xl font-semibold">{{ ACTIONS[d.action] }} · {{ d.carrier }} {{ d.flight_number }} {{ d.origin }} → {{ d.dest }}</h1>
             <p class="text-sm text-slate-600">
                 {{ d.author }}, {{ localDate(d.recorded_at, ATL_TZ) }} {{ localTime(d.recorded_at, ATL_TZ) }} Atlanta time.
@@ -30,6 +33,11 @@ const cell = 'px-2 py-1';
             </p>
             <Link v-if="d.flight_found" :href="flightHref" class="text-sm text-sky-700 underline">Open the flight's impact page →</Link>
         </header>
+
+        <PageHelp>
+            <p><strong>What this shows:</strong> one logged decision, with the delay chain exactly as it looked when the decision was made.</p>
+            <p><strong>How to read it:</strong> the chain is frozen, so later data changes don't rewrite history. Compare the predicted columns with the actual ones to see whether the decision helped.</p>
+        </PageHelp>
 
         <blockquote class="border-l-4 border-slate-300 pl-3 text-sm">{{ d.reason }}</blockquote>
 
